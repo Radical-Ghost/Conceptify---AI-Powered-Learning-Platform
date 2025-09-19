@@ -3,8 +3,6 @@
 Conceptify is an AI-powered platform that helps students learn smarter.  
 It extracts knowledge from textbooks (PDFs or scanned images), summarizes concepts, and generates adaptive quizzes to make studying interactive and personalized.
 
----
-
 ## 🚀 Features
 
 -   **PDF/Image to Text**
@@ -28,8 +26,6 @@ It extracts knowledge from textbooks (PDFs or scanned images), summarizes concep
 -   **Adaptive Learning Engine**
     -   Dynamic quizzes based on student performance
 
----
-
 ## 🛠️ Tech Stack
 
 -   **Python** (3.10, managed with [uv](https://github.com/astral-sh/uv))
@@ -39,8 +35,6 @@ It extracts knowledge from textbooks (PDFs or scanned images), summarizes concep
 -   **Database (Planned)**: MongoDB / Firestore
 -   **Frontend (Planned)**: React
 -   **Backend (Planned)**: FastAPI
-
----
 
 ## 📦 Installation & Setup
 
@@ -69,8 +63,6 @@ It extracts knowledge from textbooks (PDFs or scanned images), summarizes concep
     ```bash
     uv sync
     ```
-
----
 
 ## 📜 License
 
