@@ -9,5 +9,12 @@ wheels/
 # Virtual environments
 .venv
 
+#envs
+*.env
+
 #documents
 documents
+
+#MICS
+.megaignore
+desktop.ini
