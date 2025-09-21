@@ -41,8 +41,8 @@ It extracts knowledge from textbooks (PDFs or scanned images), summarizes concep
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/yourusername/conceptify.git
-    cd conceptify
+    git clone https://github.com/Radical-Ghost/Conceptify---AI-Powered-Learning-Platform.git "Conceptify - AI-Powered Learning Platform"
+    cd Conceptify - AI-Powered Learning Platform
     ```
 
 2. Initialize project (creates pyproject.toml if not exists):
@@ -67,3 +67,6 @@ It extracts knowledge from textbooks (PDFs or scanned images), summarizes concep
 ## 📜 License
 
 MIT License © 2025 – Conceptify Team
+
+
+
