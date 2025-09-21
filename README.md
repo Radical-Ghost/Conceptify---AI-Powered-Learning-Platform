@@ -45,20 +45,14 @@ It extracts knowledge from textbooks (PDFs or scanned images), summarizes concep
     cd Conceptify - AI-Powered Learning Platform
     ```
 
-2. Initialize project (creates pyproject.toml if not exists):
-
-    ```bash
-    uv init
-    ```
-
-3. Create and activate virtual environment (Python 3.10):
+2. Create and activate virtual environment (Python 3.10):
 
     ```bash
     uv venv -p 3.10
     .venv\Scripts\activate
     ```
 
-4. Install dependencies:
+3. Install dependencies:
 
     ```bash
     uv sync
@@ -67,6 +61,7 @@ It extracts knowledge from textbooks (PDFs or scanned images), summarizes concep
 ## 📜 License
 
 MIT License © 2025 – Conceptify Team
+
 
 
 
