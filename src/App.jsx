@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
-=======
-import React, { useState } from 'react';
->>>>>>> 29cf1f51f16e8c35beafbeb0622ca49f2f52ec05
 import LandingPage from './components/LandingPage';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
@@ -10,14 +6,10 @@ import Dashboard from './components/Dashboard';
 import ChatbotPage from './components/ChatbotPage';
 import OcrPage from './components/OcrPage';
 import OCRResultPage from './components/OcrResultPage';
-<<<<<<< HEAD
 import Sidebar from './components/SideBar';
 import Navbar from './components/Navbar';
 import { styles } from './styles/styles';
 import './styles/MainLayout.css';
-=======
-import { styles } from './styles/styles';
->>>>>>> 29cf1f51f16e8c35beafbeb0622ca49f2f52ec05
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState('landing');
@@ -25,7 +17,6 @@ const App = () => {
   const [ocrResult, setOcrResult] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
-<<<<<<< HEAD
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Toggle sidebar
@@ -56,8 +47,6 @@ const App = () => {
       setIsSidebarOpen(false);
     }
   }, [currentPage]);
-=======
->>>>>>> 29cf1f51f16e8c35beafbeb0622ca49f2f52ec05
 
   // Authentication handlers
   const handleLogin = (email, password) => {
@@ -75,10 +64,7 @@ const App = () => {
     setCurrentPage('landing');
     setChatMessages([]);
     setOcrResult(null);
-<<<<<<< HEAD
     setIsSidebarOpen(false);
-=======
->>>>>>> 29cf1f51f16e8c35beafbeb0622ca49f2f52ec05
   };
 
   // Chat handlers
@@ -113,7 +99,6 @@ const App = () => {
     }, 2000);
   };
 
-<<<<<<< HEAD
   // Pages that should show sidebar and navbar
   const pagesWithLayout = ['dashboard', 'chatbot', 'ocr', 'ocr-result', 'settings'];
 
@@ -121,17 +106,12 @@ const App = () => {
   const renderCurrentPage = () => {
     const mainContentClass = isSidebarOpen ? 'mainContentWithSidebar' : 'mainContentFull';
     
-=======
-  // Page Router
-  const renderCurrentPage = () => {
->>>>>>> 29cf1f51f16e8c35beafbeb0622ca49f2f52ec05
     switch (currentPage) {
       case 'login':
         return <LoginPage setCurrentPage={setCurrentPage} handleLogin={handleLogin} />;
       case 'signup':
         return <SignupPage setCurrentPage={setCurrentPage} handleSignup={handleSignup} />;
       case 'dashboard':
-<<<<<<< HEAD
         return (
           <div className={mainContentClass}>
             <Dashboard 
@@ -182,35 +162,6 @@ const App = () => {
               <p>Settings page content will go here...</p>
             </div>
           </div>
-=======
-        return <Dashboard user={user} handleLogout={handleLogout} setCurrentPage={setCurrentPage} />;
-      case 'chatbot':
-        return (
-          <ChatbotPage 
-            chatMessages={chatMessages}
-            inputMessage={inputMessage}
-            setInputMessage={setInputMessage}
-            handleSendMessage={handleSendMessage}
-            handleLogout={handleLogout}
-            setCurrentPage={setCurrentPage}
-          />
-        );
-      case 'ocr':
-        return (
-          <OcrPage 
-            handleFileUpload={handleFileUpload}
-            handleLogout={handleLogout}
-            setCurrentPage={setCurrentPage}
-          />
-        );
-      case 'ocr-result':
-        return (
-          <OCRResultPage 
-            ocrResult={ocrResult}
-            handleLogout={handleLogout}
-            setCurrentPage={setCurrentPage}
-          />
->>>>>>> 29cf1f51f16e8c35beafbeb0622ca49f2f52ec05
         );
       default:
         return <LandingPage setCurrentPage={setCurrentPage} />;
@@ -219,7 +170,6 @@ const App = () => {
 
   return (
     <div style={styles.container}>
-<<<<<<< HEAD
       {user && pagesWithLayout.includes(currentPage) && (
         <>
           <Sidebar 
@@ -238,8 +188,6 @@ const App = () => {
           />
         </>
       )}
-=======
->>>>>>> 29cf1f51f16e8c35beafbeb0622ca49f2f52ec05
       {renderCurrentPage()}
     </div>
   );
