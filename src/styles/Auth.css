@@ -1,0 +1,115 @@
+.authPage {
+    
+  min-height: 100vh;
+  height: 100%;
+  background: linear-gradient(135deg, #1e3a8a, #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0rem, 3vw, 0rem);
+  position: relative;
+  overflow: hidden;
+}
+
+.authCard {
+  margin-top: -1%;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border-radius: clamp(12px, 2vw, 20px);
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  width: 100%;
+  max-width: min(450px, 90vw);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.authHeader {
+  text-align: center;
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  color: white;
+}
+
+.authTitle {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.authSubtitle {
+  color: #e0e7ff;
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  font-weight: 300;
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.authInput {
+  width: 100%;
+  padding: clamp(0.875rem, 2vw, 1rem);
+  border-radius: clamp(8px, 1.5vw, 12px);
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.authInput:focus {
+  outline: none;
+  border-color: rgba(96, 165, 250, 0.8);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+.authInput::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.authButton {
+  width: 100%;
+  background-color: #2563eb;
+  color: white;
+  padding: clamp(0.875rem, 2vw, 1rem);
+  border-radius: clamp(8px, 1.5vw, 12px);
+  font-weight: 600;
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+}
+
+.authButton:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4);
+}
+
+.authButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.authLinks {
+  text-align: center;
+  margin-top: clamp(1rem, 2.5vw, 2rem);
+}
+
+.authLink {
+  color: #93c5fd;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  transition: color 0.2s ease;
+}
+
+.authLink:hover {
+  color: #60a5fa;
+}
