@@ -22,3 +22,29 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+<<<<<<< HEAD
+=======
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+#envs
+*.env
+
+#documents
+documents
+OCR/Tests files
+OCR/Tests output
+
+#MICS
+.megaignore
+desktop.ini
+>>>>>>> 29cf1f51f16e8c35beafbeb0622ca49f2f52ec05

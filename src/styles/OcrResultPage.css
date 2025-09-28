@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .ocrResultContent {
   padding: 2rem;
   max-width: 1400px;
@@ -189,4 +190,156 @@
   .extractedText {
     max-height: 300px;
   }
+=======
+.ocrResultPage {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+}
+
+.ocrResultContainer {
+  flex: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  width: 100%;
+  overflow: auto;
+}
+
+.ocrResultGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(500px, 100%), 1fr));
+  gap: 2rem;
+}
+
+.resultCard {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+  padding: 1.75rem;
+  height: fit-content;
+}
+
+.resultTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.extractedText {
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 1.25rem;
+  max-height: 24rem;
+  overflow-y: auto;
+  color: #475569;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.analysisSection {
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.conceptTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.conceptTag {
+  background-color: #dbeafe;
+  color: #1e40af;
+  padding: 0.375rem 0.875rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.difficultyTag {
+  background-color: #fef3c7;
+  color: #92400e;
+  padding: 0.375rem 0.875rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.actionCard {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+  padding: 1.75rem;
+}
+
+.actionButton {
+  width: 100%;
+  text-align: left;
+  padding: 1.25rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.actionButton:last-child {
+  margin-bottom: 0;
+}
+
+.actionButtonBlue {
+  background-color: #eff6ff;
+}
+
+.actionButtonBlue:hover {
+  background-color: #dbeafe;
+}
+
+.actionButtonGreen {
+  background-color: #f0fdf4;
+}
+
+.actionButtonGreen:hover {
+  background-color: #dcfce7;
+}
+
+.actionContent {
+  display: flex;
+  align-items: center;
+}
+
+.actionIcon {
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.actionTitle {
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.actionDescription {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+>>>>>>> 29cf1f51f16e8c35beafbeb0622ca49f2f52ec05
 }
