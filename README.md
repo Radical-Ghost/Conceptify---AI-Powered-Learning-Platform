@@ -41,29 +41,19 @@ It extracts knowledge from textbooks (PDFs or scanned images), summarizes concep
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/yourusername/conceptify.git
-    cd conceptify
+    git clone https://github.com/Radical-Ghost/Conceptify---AI-Powered-Learning-Platform.git "Conceptify - AI-Powered Learning Platform"
+    cd Conceptify - AI-Powered Learning Platform
     ```
 
-2. Initialize project (creates pyproject.toml if not exists):
-
-    ```bash
-    uv init
-    ```
-
-3. Create and activate virtual environment (Python 3.10):
+2. Create and activate virtual environment (Python 3.10):
 
     ```bash
     uv venv -p 3.10
     .venv\Scripts\activate
     ```
 
-4. Install dependencies:
+3. Install dependencies:
 
     ```bash
     uv sync
     ```
-
-## 📜 License
-
-MIT License © 2025 – Conceptify Team

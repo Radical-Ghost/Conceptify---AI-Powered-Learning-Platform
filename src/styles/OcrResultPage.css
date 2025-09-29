@@ -1,17 +1,33 @@
-.ocrResultPage {
-  min-height: 100vh;
-  background-color: #f8fafc;
-  display: flex;
-  flex-direction: column;
-}
-
-.ocrResultContainer {
-  flex: 1;
+.ocrResultContent {
+  padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1rem;
-  width: 100%;
-  overflow: auto;
+  height: calc(100vh - 70px);
+  overflow-y: auto;
+}
+
+.ocrResultHeader {
+  margin-bottom: 2rem;
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.headerTitle h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.headerSubtitle {
+  color: #64748b;
+  font-size: 1.125rem;
+  margin: 0;
 }
 
 .ocrResultGrid {
@@ -41,7 +57,7 @@
   background-color: #f8fafc;
   border-radius: 8px;
   padding: 1.25rem;
-  max-height: 24rem;
+  max-height: 400px;
   overflow-y: auto;
   color: #475569;
   line-height: 1.6;
@@ -148,4 +164,29 @@
   font-size: 0.875rem;
   color: #64748b;
   margin: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .ocrResultContent {
+    padding: 1rem;
+    height: calc(100vh - 70px);
+  }
+  
+  .headerTitle h1 {
+    font-size: 1.5rem;
+  }
+  
+  .ocrResultGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .resultCard {
+    padding: 1.25rem;
+  }
+  
+  .extractedText {
+    max-height: 300px;
+  }
 }

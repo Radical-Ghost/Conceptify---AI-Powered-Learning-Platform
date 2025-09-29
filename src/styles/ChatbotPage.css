@@ -1,18 +1,34 @@
-.chatPage {
-  min-height: 100vh;
-  background-color: #f8fafc;
+.chatPageContent {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;
 }
 
-.chatContainer {
-  flex: 1;
-  max-width: 1024px;
-  margin: 0 auto;
-  padding: 1rem;
-  width: 100%;
+.chatHeader {
+  margin-bottom: 2rem;
+}
+
+.chatTitleSection {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.chatTitleSection h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.chatHeader p {
+  color: #64748b;
+  font-size: 1.125rem;
+  margin: 0;
 }
 
 .chatCard {
@@ -134,25 +150,6 @@
   transform: none;
 }
 
-.navBackButton {
-  margin-right: 1rem;
-  color: #64748b;
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.navBackButton:hover {
-  color: #334155;
-  background-color: #f1f5f9;
-}
-
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -166,5 +163,21 @@
   to { 
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .chatPageContent {
+    padding: 1rem;
+    height: calc(100vh - 70px);
+  }
+  
+  .chatTitleSection h1 {
+    font-size: 1.5rem;
+  }
+  
+  .chatHeader p {
+    font-size: 1rem;
   }
 }
