@@ -178,14 +178,17 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 				data: {
 					extraction_results: {
 						extracted_text:
+							pythonResult.finalExtractedText ||
 							pythonResult.extractedText ||
 							pythonResult.final_text ||
 							"",
 						raw_text:
+							pythonResult.originalOcrOutput ||
 							pythonResult.rawText ||
 							pythonResult.raw_ocr_text ||
 							"",
 						corrected_text:
+							pythonResult.enhancedTextNltk ||
 							pythonResult.correctedText ||
 							pythonResult.corrected_text ||
 							"",
