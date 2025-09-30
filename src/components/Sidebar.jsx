@@ -7,6 +7,7 @@ import {
 	Home,
 	X,
 } from "lucide-react";
+import logoImage from "../assets/logo.png";
 import "../styles/Sidebar.css";
 
 const Sidebar = ({
@@ -55,7 +56,11 @@ const Sidebar = ({
 						<button
 							className="logoButton"
 							onClick={handleTitleClick}>
-							<BookOpen size={32} color="#2563eb" />
+							<img
+								src={logoImage}
+								alt="Conceptify Logo"
+								className="logoImage"
+							/>
 						</button>
 						<span
 							className="sidebarTitle"
