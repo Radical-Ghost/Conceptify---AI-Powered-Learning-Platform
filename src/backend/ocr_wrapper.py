@@ -14,22 +14,44 @@ from collections import Counter
 import hashlib
 
 # Core dependencies
-try:
-    import pdfplumber
-    import fitz
-    import pytesseract
-    import cv2
-    import numpy as np
-    from PIL import Image, ImageEnhance
-    import nltk
-    DEPS_AVAILABLE = True
-except ImportError as e:
+required_imports = [
+    ("pdfplumber", "pdfplumber"),
+    ("fitz", "PyMuPDF"),
+    ("pytesseract", "pytesseract"),
+    ("cv2", "opencv-python"),
+    ("numpy", "numpy"),
+    ("PIL", "Pillow"),
+    ("nltk", "nltk"),
+]
+missing = []
+for mod_name, pip_name in required_imports:
+    try:
+        if mod_name == "PIL":
+            import PIL
+            from PIL import Image, ImageEnhance
+        else:
+            __import__(mod_name)
+    except ImportError:
+        missing.append((mod_name, pip_name))
+if missing:
+    missing_mods = [m[0] for m in missing]
+    install_cmd = "pip install " + " ".join(sorted(set(m[1] for m in missing)))
     print(json.dumps({
         'success': False,
-        'error': f'Required dependencies not installed: {str(e)}'
+        'error': (
+            f"Required dependencies not installed: {', '.join(missing_mods)}. "
+            f"To install, run: {install_cmd}"
+        )
     }))
     sys.exit(1)
-
+import pdfplumber
+import fitz
+import pytesseract
+import cv2
+import numpy as np
+from PIL import Image, ImageEnhance
+import nltk
+DEPS_AVAILABLE = True
 class OCRPipeline:
     def __init__(self):
         self.setup_nltk()
