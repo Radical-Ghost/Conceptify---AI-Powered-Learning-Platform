@@ -1,5 +1,6 @@
 import React from "react";
 import { BookOpen, LogOut } from "lucide-react";
+import logoImage from "../assets/logo.png";
 import "../styles/Navbar.css";
 
 const Navbar = ({
@@ -30,7 +31,11 @@ const Navbar = ({
 					{/* Show only logo when sidebar is closed - no three lines */}
 					{!isSidebarOpen && (
 						<button className="logoButton" onClick={toggleSidebar}>
-							<BookOpen size={28} color="#2563eb" />
+							<img
+								src={logoImage}
+								alt="Conceptify Logo"
+								className="logoImage"
+							/>
 						</button>
 					)}
 
