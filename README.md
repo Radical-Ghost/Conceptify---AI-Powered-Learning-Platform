@@ -73,7 +73,7 @@
 
 ---
 
-## � Quick Start
+## 🚀 Quick Start
 
 ### **Prerequisites**
 
@@ -194,7 +194,7 @@ npm run preview
 
 ---
 
-## � Project Structure
+## 📁 Project Structure
 
 ```
 Conceptify - AI-Powered Learning Platform/
