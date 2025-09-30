@@ -277,7 +277,7 @@ What specific aspect would you like me to explain?`;
 
 			// If server is available but request failed for other reasons
 			setOcrResult({
-				error: "Error processing file. Please try again.",
+				error: `Error processing file. Please try again.${error && error.message ? " Details: " + error.message : ""}`,
 			});
 			setCurrentPage("ocr-result");
 		}
