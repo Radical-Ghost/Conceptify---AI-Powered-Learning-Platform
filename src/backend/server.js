@@ -348,7 +348,7 @@ app.listen(PORT, () => {
 	console.log(`🚀 Backend server running on http://localhost:${PORT}`);
 	console.log(`📄 OCR processing endpoint: POST /api/ocr/process`);
 	console.log(`� Get specific OCR result: GET /api/ocr/result/:filename`);
-	console.log(`�📝 Update OCR results: PUT /api/ocr/update/:filename`);
+	console.log(`📝 Update OCR results: PUT /api/ocr/update/:filename`);
 	console.log(`📋 List OCR results: GET /api/ocr/results`);
 	console.log(`💚 Health check: GET /api/health`);
 });
