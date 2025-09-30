@@ -1,140 +1,284 @@
 .ocrPageContent {
-  padding: 2rem;
-  max-width: 1024px;
-  margin: 0 auto;
-  height: calc(100vh - 70px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+	padding: 2rem;
+	max-width: 1024px;
+	margin: 0 auto;
+	height: calc(100vh - 70px);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
 }
 
 .ocrHeader {
-  text-align: center;
-  margin-bottom: 2.5rem;
+	text-align: center;
+	margin-bottom: 2.5rem;
 }
 
 .headerTitle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	margin-bottom: 1rem;
 }
 
 .headerTitle h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0;
+	font-size: 2rem;
+	font-weight: 700;
+	color: #1e293b;
+	margin: 0;
 }
 
 .ocrSubtitle {
-  color: #64748b;
-  font-size: 1.125rem;
+	color: #64748b;
+	font-size: 1.125rem;
 }
 
 .ocrProcessing {
-  text-align: center;
-  padding: 3rem 1rem;
+	text-align: center;
+	padding: 3rem 1rem;
 }
 
 .spinner {
-  width: 4rem;
-  height: 4rem;
-  border: 3px solid #f1f5f9;
-  border-top: 3px solid #8b5cf6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1.5rem auto;
+	width: 4rem;
+	height: 4rem;
+	border: 3px solid #f1f5f9;
+	border-top: 3px solid #8b5cf6;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	margin: 0 auto 1.5rem auto;
 }
 
 .processingTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 0.75rem;
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: #1e293b;
+	margin-bottom: 0.75rem;
 }
 
 .processingText {
-  color: #64748b;
+	color: #64748b;
 }
 
 .uploadArea {
-  border: 2px dashed #cbd5e1;
-  border-radius: 16px;
-  padding: 3.5rem 2rem;
-  text-align: center;
-  transition: all 0.3s ease;
-  background-color: white;
-  cursor: pointer;
+	border: 2px dashed #cbd5e1;
+	border-radius: 16px;
+	padding: 3.5rem 2rem;
+	text-align: center;
+	transition: all 0.3s ease;
+	background-color: white;
+	cursor: pointer;
 }
 
 .uploadArea:hover {
-  border-color: #8b5cf6;
-  background-color: #f8fafc;
+	border-color: #8b5cf6;
+	background-color: #f8fafc;
 }
 
 .uploadAreaHover {
-  border-color: #8b5cf6;
-  background-color: #f5f3ff;
+	border-color: #8b5cf6;
+	background-color: #f5f3ff;
 }
 
 .uploadIcon {
-  margin: 0 auto 1.5rem auto;
-  color: #94a3b8;
+	margin: 0 auto 1.5rem auto;
+	color: #94a3b8;
 }
 
 .uploadTitle {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 0.75rem;
+	font-size: 1.5rem;
+	font-weight: 600;
+	color: #1e293b;
+	margin-bottom: 0.75rem;
 }
 
 .uploadDescription {
-  color: #64748b;
-  margin-bottom: 1.5rem;
-  font-size: 1rem;
+	color: #64748b;
+	margin-bottom: 1.5rem;
+	font-size: 1rem;
 }
 
 .uploadButton {
-  background-color: #8b5cf6;
-  color: white;
-  padding: 0.875rem 1.75rem;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
+	background-color: #8b5cf6;
+	color: white;
+	padding: 0.875rem 1.75rem;
+	border-radius: 10px;
+	border: none;
+	cursor: pointer;
+	font-size: 1rem;
+	font-weight: 600;
+	transition: all 0.2s ease;
 }
 
 .uploadButton:hover {
-  background-color: #7c3aed;
-  transform: translateY(-2px);
+	background-color: #7c3aed;
+	transform: translateY(-2px);
 }
 
 .hiddenInput {
-  display: none;
+	display: none;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+/* Main content layout */
+.ocrMainContent {
+	display: grid;
+	grid-template-columns: 1fr 400px;
+	gap: 2rem;
+	max-width: 1400px;
+	width: 100%;
+}
+
+.uploadSection {
+	flex: 1;
+}
+
+/* History Section */
+.historySection {
+	background: white;
+	border-radius: 12px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+	padding: 1.5rem;
+	height: fit-content;
+	max-height: 600px;
+	overflow-y: auto;
+}
+
+.historyHeader {
+	margin-bottom: 1rem;
+}
+
+.historyTitle {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.historyTitle h3 {
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: #374151;
+	margin: 0;
+}
+
+.historyLoading {
+	text-align: center;
+	color: #6b7280;
+	padding: 2rem 0;
+}
+
+.historyEmpty {
+	text-align: center;
+	color: #6b7280;
+	padding: 2rem 0;
+}
+
+.historyEmpty p {
+	margin: 0.5rem 0;
+}
+
+.historyEmptySubtext {
+	font-size: 0.875rem;
+	color: #9ca3af;
+}
+
+.historyList {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.historyItem {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.75rem;
+	padding: 1rem;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.historyItem:hover {
+	border-color: #8b5cf6;
+	background-color: #faf5ff;
+	transform: translateY(-1px);
+}
+
+.historyItemIcon {
+	flex-shrink: 0;
+	margin-top: 0.125rem;
+}
+
+.historyItemContent {
+	flex: 1;
+	min-width: 0;
+}
+
+.historyItemName {
+	font-weight: 600;
+	color: #374151;
+	font-size: 0.875rem;
+	margin-bottom: 0.25rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.historyItemPreview {
+	color: #6b7280;
+	font-size: 0.75rem;
+	line-height: 1.4;
+	margin-bottom: 0.5rem;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.historyItemMeta {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	color: #9ca3af;
+	font-size: 0.75rem;
 }
 
 /* Responsive design */
+@media (max-width: 1200px) {
+	.ocrMainContent {
+		grid-template-columns: 1fr;
+		gap: 1.5rem;
+	}
+
+	.historySection {
+		order: -1;
+		max-height: 300px;
+	}
+}
+
 @media (max-width: 768px) {
-  .ocrPageContent {
-    padding: 1rem;
-    height: calc(100vh - 70px);
-  }
-  
-  .headerTitle h1 {
-    font-size: 1.5rem;
-  }
-  
-  .uploadArea {
-    padding: 2rem 1rem;
-  }
+	.ocrPageContent {
+		padding: 1rem;
+		height: calc(100vh - 70px);
+	}
+
+	.headerTitle h1 {
+		font-size: 1.5rem;
+	}
+
+	.uploadArea {
+		padding: 2rem 1rem;
+	}
+
+	.historySection {
+		padding: 1rem;
+	}
 }

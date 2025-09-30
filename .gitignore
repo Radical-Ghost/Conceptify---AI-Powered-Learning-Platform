@@ -34,6 +34,9 @@ wheels/
 # Virtual environments
 .venv
 
+#models - too big (pretrained)
+models/
+
 #envs
 *.env
 
@@ -41,6 +44,11 @@ wheels/
 documents
 OCR/Tests files
 OCR/Tests output
+OCR/firebase_data
+
+# Uploads
+src/backend/uploads
+src/backend/data
 
 #MICS
 .megaignore
