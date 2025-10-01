@@ -191,6 +191,47 @@
 	flex-wrap: wrap;
 }
 
+.processingSummaryText {
+	margin-top: 1.5rem;
+	background-color: #f8fafc;
+	border-radius: 8px;
+	padding: 1.25rem;
+	color: #475569;
+	line-height: 1.6;
+}
+
+.summaryText {
+	margin: 0;
+	white-space: pre-line;
+}
+
+.summaryModelTag {
+	display: inline-block;
+	margin-top: 0.75rem;
+	padding: 0.25rem 0.75rem;
+	background-color: #e2e8f0;
+	color: #475569;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.summaryMeta {
+	margin-top: 0.75rem;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	font-size: 0.8rem;
+	color: #475569;
+}
+
+.summaryMeta span {
+	padding: 0.25rem 0.6rem;
+	background-color: #eef2ff;
+	border-radius: 999px;
+}
+
 .statItem {
 	display: flex;
 	align-items: center;

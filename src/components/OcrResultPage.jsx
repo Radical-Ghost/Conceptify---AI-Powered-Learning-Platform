@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
 	Eye,
 	MessageSquare,
@@ -13,13 +14,44 @@ import {
 } from "lucide-react";
 import "../styles/OcrResultPage.css";
 
-const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
+const OCRResultPage = ({ ocrResult, setOcrResult }) => {
+	const navigate = useNavigate();
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedText, setEditedText] = useState(
 		ocrResult?.finalExtractedText || ocrResult?.extractedText || ""
 	);
 	const [selectedTab, setSelectedTab] = useState("final"); // 'original', 'enhanced', 'final'
 	const [saveMessage, setSaveMessage] = useState("");
+	const summaryDetails =
+		ocrResult?.summaryDetails ||
+		ocrResult?.processingMetadata?.summary_details ||
+		ocrResult?.summary_details;
+	const summaryTime =
+		ocrResult?.summaryTime ??
+		summaryDetails?.duration ??
+		ocrResult?.processingMetadata?.summary_time;
+	const summaryMetaItems = [];
+
+	if (summaryTime !== undefined && summaryTime !== null) {
+		const numericTime = Number(summaryTime);
+		if (!Number.isNaN(numericTime)) {
+			summaryMetaItems.push(
+				`Generated in ${numericTime.toFixed(numericTime >= 1 ? 1 : 2)}s`
+			);
+		}
+	}
+
+	if (summaryDetails?.strategy) {
+		summaryMetaItems.push(`Mode: ${summaryDetails.strategy}`);
+	}
+
+	if (summaryDetails?.chunks) {
+		summaryMetaItems.push(`Chunks: ${summaryDetails.chunks}`);
+	}
+
+	if (summaryDetails?.trimmed && summaryDetails?.trimmed_words) {
+		summaryMetaItems.push(`Trimmed ${summaryDetails.trimmed_words} words`);
+	}
 
 	const handleSaveEdit = async () => {
 		try {
@@ -165,31 +197,24 @@ const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
 			{/* Processing Summary */}
 			{ocrResult?.processingMetadata && (
 				<div className="resultCard" style={{ marginBottom: "1.5rem" }}>
-					<h2 className="resultTitle">Processing Summary</h2>
-					<div className="processingStats">
-						<div className="statItem">
-							<BarChart3 size={16} />
-							<span>
-								Pages:{" "}
-								{ocrResult?.fileInfo?.pages_processed || "N/A"}
-							</span>
+					{ocrResult?.summary && (
+						<div className="processingSummaryText">
+							<h3 className="sectionTitle">AI Summary</h3>
+							<p className="summaryText">{ocrResult.summary}</p>
+							{summaryMetaItems.length > 0 && (
+								<div className="summaryMeta">
+									{summaryMetaItems.map((item, index) => (
+										<span key={index}>{item}</span>
+									))}
+								</div>
+							)}
+							{ocrResult?.summaryModel && (
+								<span className="summaryModelTag">
+									Model: {ocrResult.summaryModel}
+								</span>
+							)}
 						</div>
-						<div className="statItem">
-							<Target size={16} />
-							<span>
-								Images:{" "}
-								{ocrResult?.fileInfo?.images_processed || "N/A"}
-							</span>
-						</div>
-						<div className="statItem">
-							<Clock size={16} />
-							<span>
-								Time:{" "}
-								{ocrResult?.processingMetadata?.processing_time}
-								s
-							</span>
-						</div>
-					</div>
+					)}
 				</div>
 			)}
 
@@ -376,7 +401,7 @@ const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
 					<div className="actionCard">
 						<h2 className="resultTitle">Learning Actions</h2>
 						<button
-							onClick={() => setCurrentPage("chatbot")}
+							onClick={() => navigate("/chatbot")}
 							className="actionButton actionButtonBlue">
 							<div className="actionContent">
 								<MessageSquare
@@ -395,7 +420,7 @@ const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
 							</div>
 						</button>
 						<button
-							onClick={() => setCurrentPage("ocr")}
+							onClick={() => navigate("/ocr")}
 							className="actionButton actionButtonGreen">
 							<div className="actionContent">
 								<Upload

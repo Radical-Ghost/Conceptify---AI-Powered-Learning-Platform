@@ -1,0 +1,406 @@
+/* Test Page Styles */
+.testPageContent {
+	padding: 2rem;
+	max-width: 1400px;
+	margin: 0 auto;
+	height: calc(100vh - 70px);
+	overflow-y: auto;
+}
+
+.testHeader {
+	margin-bottom: 2rem;
+}
+
+.headerTitle {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 0.5rem;
+}
+
+.headerTitle h1 {
+	font-size: 2rem;
+	font-weight: 700;
+	color: #1e293b;
+	margin: 0;
+}
+
+.testSubtitle {
+	color: #64748b;
+	font-size: 1.125rem;
+	margin: 0;
+}
+
+/* Stats Grid */
+.statsGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 1.5rem;
+	margin-bottom: 2rem;
+}
+
+.statCard {
+	background-color: white;
+	border-radius: 12px;
+	padding: 1.5rem;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.statCard:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 12px rgba(0, 0, 0, 0.08);
+}
+
+.statIcon {
+	width: 48px;
+	height: 48px;
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.statCardBlue .statIcon {
+	background-color: #dbeafe;
+	color: #2563eb;
+}
+
+.statCardGreen .statIcon {
+	background-color: #dcfce7;
+	color: #10b981;
+}
+
+.statCardOrange .statIcon {
+	background-color: #fed7aa;
+	color: #f59e0b;
+}
+
+.statCardPurple .statIcon {
+	background-color: #e9d5ff;
+	color: #8b5cf6;
+}
+
+.statInfo {
+	flex: 1;
+}
+
+.statNumber {
+	font-size: 2rem;
+	font-weight: 700;
+	color: #1e293b;
+	margin: 0;
+}
+
+.statLabel {
+	font-size: 0.875rem;
+	color: #64748b;
+	margin: 0;
+}
+
+/* Main Content Grid */
+.testMainGrid {
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	gap: 2rem;
+}
+
+.testSection {
+	background-color: white;
+	border-radius: 12px;
+	padding: 1.75rem;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+}
+
+.sectionTitle {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: #1e293b;
+	margin-bottom: 1.5rem;
+	padding-bottom: 0.75rem;
+	border-bottom: 2px solid #f1f5f9;
+}
+
+/* Loading and Empty States */
+.loadingState,
+.emptyState {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 3rem;
+	color: #94a3b8;
+}
+
+.emptyState p {
+	margin: 0.5rem 0 0 0;
+	font-size: 1rem;
+	color: #64748b;
+}
+
+.emptySubtext {
+	font-size: 0.875rem !important;
+	color: #94a3b8 !important;
+}
+
+/* Documents Grid */
+.documentsGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 1.25rem;
+}
+
+.documentCard {
+	background-color: #f8fafc;
+	border: 2px solid #e2e8f0;
+	border-radius: 10px;
+	padding: 1.25rem;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.documentCard:hover {
+	border-color: #3b82f6;
+	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+	transform: translateY(-2px);
+}
+
+.documentCardCompleted {
+	border-color: #10b981;
+	background-color: #f0fdf4;
+}
+
+.documentCardCompleted:hover {
+	border-color: #10b981;
+	box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.documentCardHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+
+.completedBadge {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	background-color: #dcfce7;
+	color: #10b981;
+	padding: 0.25rem 0.75rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+.documentCardBody {
+	margin-bottom: 1rem;
+}
+
+.documentTitle {
+	font-size: 1rem;
+	font-weight: 600;
+	color: #1e293b;
+	margin: 0 0 0.5rem 0;
+	line-height: 1.4;
+}
+
+.documentMeta {
+	font-size: 0.75rem;
+	color: #94a3b8;
+	margin: 0;
+}
+
+.scoreDisplay {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 0.75rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid #e2e8f0;
+	color: #10b981;
+	font-weight: 600;
+	font-size: 0.875rem;
+}
+
+.documentCardFooter {
+	margin-top: 1rem;
+}
+
+.startTestBtn {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	padding: 0.75rem;
+	background-color: #3b82f6;
+	color: white;
+	border: none;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.startTestBtn:hover {
+	background-color: #2563eb;
+}
+
+.documentCardCompleted .startTestBtn {
+	background-color: #10b981;
+}
+
+.documentCardCompleted .startTestBtn:hover {
+	background-color: #059669;
+}
+
+/* History Section */
+.historySection {
+	background-color: white;
+	border-radius: 12px;
+	padding: 1.75rem;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+	max-height: calc(100vh - 300px);
+	overflow-y: auto;
+}
+
+.emptyHistory {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 2rem;
+	color: #94a3b8;
+}
+
+.emptyHistory p {
+	margin-top: 0.5rem;
+	font-size: 0.875rem;
+}
+
+.historyList {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.historyItem {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	padding: 1rem;
+	background-color: #f8fafc;
+	border-radius: 8px;
+	transition: background-color 0.2s ease;
+}
+
+.historyItem:hover {
+	background-color: #f1f5f9;
+}
+
+.historyIcon {
+	width: 40px;
+	height: 40px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: white;
+}
+
+.historyContent {
+	flex: 1;
+}
+
+.historyTitle {
+	font-weight: 600;
+	color: #1e293b;
+	margin-bottom: 0.25rem;
+	font-size: 0.875rem;
+}
+
+.historyMeta {
+	font-size: 0.75rem;
+	color: #94a3b8;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.historySeparator {
+	color: #cbd5e1;
+}
+
+.historyScore {
+	font-size: 1.25rem;
+	font-weight: 700;
+	padding: 0.5rem 1rem;
+	border-radius: 8px;
+}
+
+.scoreHigh {
+	background-color: #dcfce7;
+	color: #10b981;
+}
+
+.scoreMedium {
+	background-color: #fed7aa;
+	color: #f59e0b;
+}
+
+.scoreLow {
+	background-color: #fee2e2;
+	color: #ef4444;
+}
+
+/* Spinner */
+.spinner {
+	width: 40px;
+	height: 40px;
+	border: 4px solid #f3f4f6;
+	border-top: 4px solid #3b82f6;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+	.testMainGrid {
+		grid-template-columns: 1fr;
+	}
+
+	.historySection {
+		max-height: 500px;
+	}
+}
+
+@media (max-width: 768px) {
+	.testPageContent {
+		padding: 1rem;
+	}
+
+	.statsGrid {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1rem;
+	}
+
+	.documentsGrid {
+		grid-template-columns: 1fr;
+	}
+}

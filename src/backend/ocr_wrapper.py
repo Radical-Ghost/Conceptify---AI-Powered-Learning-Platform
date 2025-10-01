@@ -12,6 +12,7 @@ import tempfile
 from datetime import datetime
 from collections import Counter
 import hashlib
+import time
 
 # Core dependencies
 required_imports = [
@@ -22,6 +23,8 @@ required_imports = [
     ("numpy", "numpy"),
     ("PIL", "Pillow"),
     ("nltk", "nltk"),
+    ("torch", "torch"),
+    ("transformers", "transformers"),
 ]
 missing = []
 for mod_name, pip_name in required_imports:
@@ -51,11 +54,46 @@ import cv2
 import numpy as np
 from PIL import Image, ImageEnhance
 import nltk
+import torch
+from transformers import pipeline
 DEPS_AVAILABLE = True
 class OCRPipeline:
     def __init__(self):
         self.setup_nltk()
         self.english_words, self.word_freq, self.stop_words = self.create_dict()
+        self.summarizer = None
+        self.setup_summarizer()
+
+    def setup_summarizer(self):
+        """Initialise BART-Large summarizer if dependencies are available"""
+        try:
+            use_gpu = torch.cuda.is_available()
+            device = 0 if use_gpu else -1
+            self.summarizer = pipeline(
+                "summarization",
+                model="facebook/bart-large-cnn",
+                device=device,
+            )
+            # Increased word limits for better coverage
+            self.summarizer_max_words = 1200 if use_gpu else 600
+            self.summarizer_max_chunks = 4 if use_gpu else 2
+            self.summarizer_batch_size = 4 if use_gpu else 1
+            self.summarizer_trim_words = 3500 if use_gpu else 1800
+            # Longer summaries for more comprehensive output
+            self.summarizer_max_length = 300 if use_gpu else 200
+            self.summarizer_min_length = 120 if use_gpu else 80
+            self.summarizer_allow_refine = use_gpu
+            self.summarizer_strategy = "gpu" if use_gpu else "cpu"
+        except Exception:
+            self.summarizer = None
+            self.summarizer_max_words = 0
+            self.summarizer_max_chunks = 0
+            self.summarizer_batch_size = 1
+            self.summarizer_trim_words = 0
+            self.summarizer_max_length = 0
+            self.summarizer_min_length = 0
+            self.summarizer_allow_refine = False
+            self.summarizer_strategy = "unavailable"
         
     def setup_nltk(self):
         """Setup NLTK with quiet initialization"""
@@ -245,7 +283,8 @@ class OCRPipeline:
                 "word_count": 0,
                 "estimated_reading_time": 0,
                 "key_topics": [],
-                "confidence_score": 0.0
+                "confidence_score": 0.0,
+                "summary": ""
             }
         
         words = text.split()
@@ -317,6 +356,140 @@ class OCRPipeline:
             "key_topics": key_topics,
             "confidence_score": round(confidence_score, 2)
         }
+
+    def summarize_text(self, text):
+        """Summarize extracted text with BART-Large"""
+        self.last_summary_details = {
+            "generated": False,
+            "strategy": getattr(self, "summarizer_strategy", "unknown"),
+            "reason": "",
+            "chunks": 0,
+            "trimmed": False,
+            "trimmed_words": 0,
+            "duration": 0.0,
+        }
+
+        if not self.summarizer:
+            self.last_summary_details["reason"] = "summarizer_unavailable"
+            return ""
+
+        if not text or len(text.strip()) < 80:
+            self.last_summary_details["reason"] = "not_enough_text"
+            return ""
+
+        start_time = time.perf_counter()
+
+        words_tokens = text.split()
+        total_words_original = len(words_tokens)
+        trimmed_words_removed = 0
+        trim_words = getattr(self, "summarizer_trim_words", 0)
+        if trim_words and total_words_original > trim_words:
+            text = " ".join(words_tokens[:trim_words])
+            trimmed_words_removed = total_words_original - trim_words
+            self.last_summary_details["trimmed"] = True
+            self.last_summary_details["trimmed_words"] = trimmed_words_removed
+
+        sentences = re.split(r'(?<=[.!?]) +', text)
+        chunks = []
+        current_chunk = []
+        current_word_count = 0
+        max_words = self.summarizer_max_words or 900
+
+        for sentence in sentences:
+            words_in_sentence = sentence.split()
+            if not words_in_sentence:
+                continue
+
+            if current_word_count + len(words_in_sentence) <= max_words:
+                current_chunk.append(sentence)
+                current_word_count += len(words_in_sentence)
+            else:
+                if current_chunk:
+                    chunks.append(" ".join(current_chunk))
+                current_chunk = [sentence]
+                current_word_count = len(words_in_sentence)
+
+        if current_chunk:
+            chunks.append(" ".join(current_chunk))
+
+        max_chunks = getattr(self, "summarizer_max_chunks", 3) or 3
+        chunks = chunks[:max_chunks]
+        chunk_count = len(chunks)
+        self.last_summary_details["chunks"] = chunk_count
+
+        if not chunks:
+            self.last_summary_details["reason"] = "no_chunks_available"
+            self.last_summary_details["duration"] = round(time.perf_counter() - start_time, 3)
+            return ""
+
+        try:
+            generation_kwargs = {
+                "max_length": self.summarizer_max_length or 300,
+                "min_length": self.summarizer_min_length or 120,
+                "do_sample": False,
+                "truncation": True,
+                # Better summary quality settings
+                "num_beams": 4,  # Beam search for better quality
+                "length_penalty": 1.0,  # Neutral length preference
+                "early_stopping": True,
+            }
+
+            if chunk_count > 1:
+                generation_kwargs["batch_size"] = self.summarizer_batch_size or 1
+
+            results = self.summarizer(
+                chunks if chunk_count > 1 else chunks[0],
+                **generation_kwargs,
+            )
+
+            if isinstance(results, dict):
+                results = [results]
+
+            summaries = [
+                res.get("summary_text", "").strip()
+                for res in results
+                if isinstance(res, dict) and res.get("summary_text")
+            ]
+        except Exception as exc:
+            self.last_summary_details["reason"] = f"generation_error:{type(exc).__name__}"
+            self.last_summary_details["duration"] = round(time.perf_counter() - start_time, 3)
+            return ""
+
+        if not summaries:
+            self.last_summary_details["reason"] = "empty_summary"
+            self.last_summary_details["duration"] = round(time.perf_counter() - start_time, 3)
+            return ""
+
+        combined_summary = " ".join(summaries)
+
+        if len(summaries) > 1 and getattr(self, "summarizer_allow_refine", False):
+            try:
+                refine_kwargs = generation_kwargs.copy()
+                refine_kwargs.pop("batch_size", None)
+                # Slightly longer for final refined summary
+                refine_kwargs["max_length"] = min(350, (self.summarizer_max_length or 300) + 50)
+                refine_kwargs["min_length"] = max(150, (self.summarizer_min_length or 120) + 30)
+                refined = self.summarizer(
+                    combined_summary,
+                    **refine_kwargs,
+                )
+                if isinstance(refined, list) and refined:
+                    combined_summary = refined[0].get("summary_text", combined_summary).strip()
+                elif isinstance(refined, dict):
+                    combined_summary = refined.get("summary_text", combined_summary).strip()
+            except Exception:
+                pass
+
+        duration = round(time.perf_counter() - start_time, 3)
+        self.last_summary_details.update({
+            "generated": True,
+            "reason": "",
+            "duration": duration,
+            "original_words": total_words_original,
+            "summary_words": len(combined_summary.split()),
+        })
+
+        return combined_summary.strip()
     
     def process_file(self, file_path, user_id=None):
         """Main processing pipeline for frontend integration"""
@@ -337,6 +510,13 @@ class OCRPipeline:
             # Analyze content
             all_text = result['extracted_text']
             analysis = self.analyze_content(all_text)
+            summary_text = self.summarize_text(all_text)
+            summary_details = getattr(self, "last_summary_details", {})
+            if summary_text:
+                analysis["summary"] = summary_text
+                analysis["summary_model"] = "facebook/bart-large-cnn"
+            if summary_details:
+                analysis["summary_details"] = summary_details
             
             # Create Firebase-ready JSON structure (Firebase will add timestamp and ID)
             firebase_data = {
@@ -358,7 +538,13 @@ class OCRPipeline:
                 "processing_metadata": {
                     "nltk_available": self.nltk_available,
                     "processing_time": result.get('processing_time', 0),
-                    "corrections_applied": result.get('corrections_applied', 0)
+                    "corrections_applied": result.get('corrections_applied', 0),
+                    "summary_time": summary_details.get('duration', 0.0),
+                    "summary_strategy": summary_details.get('strategy'),
+                    "summary_chunks": summary_details.get('chunks', 0),
+                    "summary_trimmed_words": summary_details.get('trimmed_words', 0),
+                    "summary_generated": summary_details.get('generated', False),
+                    "summary_reason": summary_details.get('reason', "")
                 }
             }
             
@@ -545,6 +731,9 @@ def main():
                 'concepts': ai_analysis.get('concepts', []),
                 'keyTopics': ai_analysis.get('key_topics', []),
                 'difficulty': ai_analysis.get('difficulty', 'Intermediate'),
+                'summary': ai_analysis.get('summary', ''),
+                'summaryDetails': ai_analysis.get('summary_details', {}),
+                'summaryTime': result.get('processing_metadata', {}).get('summary_time', 0.0),
                 'processingMetadata': result.get('processing_metadata', {}),
                 'fileInfo': result.get('extraction_results', {})
             }

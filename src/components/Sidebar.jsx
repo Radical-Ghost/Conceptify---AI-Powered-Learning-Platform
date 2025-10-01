@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
 	BookOpen,
 	MessageSquare,
@@ -6,30 +7,48 @@ import {
 	Settings,
 	Home,
 	X,
+	ClipboardCheck,
 } from "lucide-react";
 import logoImage from "../assets/logo.png";
 import "../styles/Sidebar.css";
 
-const Sidebar = ({
-	currentPage,
-	setCurrentPage,
-	user,
-	isSidebarOpen,
-	toggleSidebar,
-}) => {
+const Sidebar = ({ user, isSidebarOpen, toggleSidebar }) => {
+	const navigate = useNavigate();
+	const location = useLocation();
+
 	const menuItems = [
-		{ id: "dashboard", label: "Dashboard", icon: Home, color: "#2563eb" },
+		{
+			id: "dashboard",
+			path: "/dashboard",
+			label: "Dashboard",
+			icon: Home,
+			color: "#2563eb",
+		},
 		{
 			id: "chatbot",
+			path: "/chatbot",
 			label: "AI Chat",
 			icon: MessageSquare,
 			color: "#3b82f6",
 		},
-		{ id: "ocr", label: "OCR", icon: Camera, color: "#8b5cf6" },
+		{
+			id: "ocr",
+			path: "/ocr",
+			label: "OCR",
+			icon: Camera,
+			color: "#8b5cf6",
+		},
+		{
+			id: "test",
+			path: "/test",
+			label: "Tests",
+			icon: ClipboardCheck,
+			color: "#10b981",
+		},
 	];
 
-	const handleNavClick = (pageId) => {
-		setCurrentPage(pageId);
+	const handleNavClick = (path) => {
+		navigate(path);
 		// Close sidebar on mobile after selection
 		if (window.innerWidth <= 1024) {
 			toggleSidebar();
@@ -53,21 +72,23 @@ const Sidebar = ({
 				}`}>
 				<div className="sidebarHeader">
 					<div className="sidebarBrand">
-						<button
-							className="logoButton"
-							onClick={handleTitleClick}>
-							<img
-								src={logoImage}
-								alt="Conceptify Logo"
-								className="logoImage"
-							/>
-						</button>
-						<span
-							className="sidebarTitle"
-							onClick={handleTitleClick}
-							style={{ cursor: "pointer" }}>
-							Conceptify
-						</span>
+						<div className="brandLogoSection">
+							<button
+								className="logoButton"
+								onClick={handleTitleClick}>
+								<img
+									src={logoImage}
+									alt="Conceptify Logo"
+									className="logoImage"
+								/>
+							</button>
+							<span
+								className="sidebarTitle"
+								onClick={handleTitleClick}
+								style={{ cursor: "pointer" }}>
+								Conceptify
+							</span>
+						</div>
 						<button className="closeButton" onClick={toggleSidebar}>
 							<X size={20} />
 						</button>
@@ -82,14 +103,15 @@ const Sidebar = ({
 					<ul className="navList">
 						{menuItems.map((item) => {
 							const IconComponent = item.icon;
+							const isActive = location.pathname === item.path;
 							return (
 								<li key={item.id}>
 									<button
-										onClick={() => handleNavClick(item.id)}
+										onClick={() =>
+											handleNavClick(item.path)
+										}
 										className={`navItem ${
-											currentPage === item.id
-												? "navItemActive"
-												: ""
+											isActive ? "navItemActive" : ""
 										}`}>
 										<IconComponent
 											size={20}
@@ -105,9 +127,11 @@ const Sidebar = ({
 
 				<div className="sidebarFooter">
 					<button
-						onClick={() => handleNavClick("settings")}
+						onClick={() => handleNavClick("/settings")}
 						className={`navItem ${
-							currentPage === "settings" ? "navItemActive" : ""
+							location.pathname === "/settings"
+								? "navItemActive"
+								: ""
 						}`}>
 						<Settings size={20} color="#64748b" />
 						<span>Settings</span>

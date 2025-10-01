@@ -1,4 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
+import {
+	BrowserRouter,
+	Routes,
+	Route,
+	Navigate,
+	useNavigate,
+	useLocation,
+} from "react-router-dom";
 import LandingPage from "./components/LandingPage";
 import LoginPage from "./components/LoginPage";
 import SignupPage from "./components/SignupPage";
@@ -6,15 +14,37 @@ import Dashboard from "./components/Dashboard";
 import ChatbotPage from "./components/ChatbotPage";
 import OcrPage from "./components/OcrPage";
 import OCRResultPage from "./components/OcrResultPage";
+import TestPage from "./components/TestPage";
+import TakeTestPage from "./components/TakeTestPage";
+import SettingsPage from "./components/SettingsPage";
 import Sidebar from "./components/SideBar";
 import Navbar from "./components/Navbar";
 import { styles } from "./styles/styles";
 import "./styles/MainLayout.css";
 
-const App = () => {
-	const [currentPage, setCurrentPage] = useState("landing");
+// Protected Route Component
+const ProtectedRoute = ({ user, children }) => {
+	if (!user) {
+		return <Navigate to="/" replace />;
+	}
+	return children;
+};
+
+// Public Route Component (redirect to dashboard if already logged in)
+const PublicRoute = ({ user, children }) => {
+	if (user) {
+		return <Navigate to="/dashboard" replace />;
+	}
+	return children;
+};
+
+// Main App Content Component
+const AppContent = () => {
+	const navigate = useNavigate();
+	const location = useLocation();
 	const [user, setUser] = useState(null);
 	const [ocrResult, setOcrResult] = useState(null);
+	const [activeTest, setActiveTest] = useState(null);
 	const [chatMessages, setChatMessages] = useState([]);
 	const [inputMessage, setInputMessage] = useState("");
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -32,9 +62,7 @@ const App = () => {
 			console.log("Server session validation failed:", error.message);
 			// Clear session when server is not available or restarted
 			localStorage.removeItem("conceptify_user");
-			localStorage.removeItem("conceptify_currentPage");
 			setUser(null);
-			setCurrentPage("landing");
 			return false;
 		}
 	}, []);
@@ -54,19 +82,12 @@ const App = () => {
 
 					if (isServerAvailable) {
 						setUser(userData);
-						// Always redirect to dashboard on reload when logged in
-						setCurrentPage("dashboard");
-						// Update localStorage to reflect dashboard as current page
-						localStorage.setItem(
-							"conceptify_currentPage",
-							"dashboard"
-						);
+						// Don't force navigation - let the user stay on their current route
+						// If they're on a public route, ProtectedRoute will handle the redirect
 					}
 				} catch (error) {
 					console.error("Error loading saved user:", error);
 					localStorage.removeItem("conceptify_user");
-					localStorage.removeItem("conceptify_currentPage");
-					setCurrentPage("landing");
 				}
 			}
 
@@ -74,7 +95,7 @@ const App = () => {
 		};
 
 		initializeSession();
-	}, [validateSession]);
+	}, [validateSession, navigate]);
 
 	// Toggle sidebar
 	const toggleSidebar = () => {
@@ -115,33 +136,30 @@ const App = () => {
 	const handleLogin = (email, _password) => {
 		const userData = { email, name: email.split("@")[0] };
 		setUser(userData);
-		setCurrentPage("dashboard");
+		navigate("/dashboard");
 
 		// Save to localStorage
 		localStorage.setItem("conceptify_user", JSON.stringify(userData));
-		localStorage.setItem("conceptify_currentPage", "dashboard");
 	};
 
 	const handleSignup = (name, email, _password) => {
 		const userData = { email, name };
 		setUser(userData);
-		setCurrentPage("dashboard");
+		navigate("/dashboard");
 
 		// Save to localStorage
 		localStorage.setItem("conceptify_user", JSON.stringify(userData));
-		localStorage.setItem("conceptify_currentPage", "dashboard");
 	};
 
 	const handleLogout = () => {
 		setUser(null);
-		setCurrentPage("landing");
+		navigate("/");
 		setChatMessages([]);
 		setOcrResult(null);
 		setIsSidebarOpen(false);
 
 		// Clear localStorage
 		localStorage.removeItem("conceptify_user");
-		localStorage.removeItem("conceptify_currentPage");
 	};
 
 	// Chat handlers
@@ -249,20 +267,34 @@ What specific aspect would you like me to explain?`;
 					confidenceScore:
 						result.confidenceScore ||
 						result.data?.ai_analysis?.confidence_score,
+					summary:
+						result.summary || result.data?.ai_analysis?.summary,
+					summaryModel:
+						result.summaryModel ||
+						result.data?.ai_analysis?.summary_model,
+					summaryDetails:
+						result.summaryDetails ||
+						result.data?.ai_analysis?.summary_details,
+					summaryTime:
+						result.summaryTime ??
+						result.data?.ai_analysis?.summary_time ??
+						result.processingMetadata?.summary_time ??
+						result.data?.processing_metadata?.summary_time ??
+						0,
 					processingMetadata:
 						result.processingMetadata ||
 						result.data?.processing_metadata,
 					fileInfo: result.fileInfo || result.data?.file_info,
 					savedFileName: result.savedFileName,
 				});
-				setCurrentPage("ocr-result");
+				navigate("/ocr-result");
 			} else {
 				console.error("OCR processing failed:", result.error);
 				// Set an error state that can be displayed in the UI instead of alert
 				setOcrResult({
 					error: "OCR processing failed: " + result.error,
 				});
-				setCurrentPage("ocr-result");
+				navigate("/ocr-result");
 			}
 		} catch (error) {
 			console.error("Error uploading file:", error);
@@ -277,20 +309,25 @@ What specific aspect would you like me to explain?`;
 
 			// If server is available but request failed for other reasons
 			setOcrResult({
-				error: `Error processing file. Please try again.${error && error.message ? " Details: " + error.message : ""}`,
+				error: `Error processing file. Please try again.${
+					error && error.message ? " Details: " + error.message : ""
+				}`,
 			});
-			setCurrentPage("ocr-result");
+			navigate("/ocr-result");
 		}
 	};
 
-	// Pages that should show sidebar and navbar
+	// Check if current route should show sidebar and navbar
 	const pagesWithLayout = [
-		"dashboard",
-		"chatbot",
-		"ocr",
-		"ocr-result",
-		"settings",
+		"/dashboard",
+		"/chatbot",
+		"/ocr",
+		"/ocr-result",
+		"/test",
+		"/take-test",
+		"/settings",
 	];
+	const showLayout = user && pagesWithLayout.includes(location.pathname);
 
 	// Loading screen while validating session
 	if (isSessionValidating) {
@@ -302,94 +339,15 @@ What specific aspect would you like me to explain?`;
 		);
 	}
 
-	// Page Router
-	const renderCurrentPage = () => {
-		const mainContentClass = isSidebarOpen
-			? "mainContentWithSidebar"
-			: "mainContentFull";
-
-		switch (currentPage) {
-			case "login":
-				return (
-					<LoginPage
-						setCurrentPage={setCurrentPage}
-						handleLogin={handleLogin}
-					/>
-				);
-			case "signup":
-				return (
-					<SignupPage
-						setCurrentPage={setCurrentPage}
-						handleSignup={handleSignup}
-					/>
-				);
-			case "dashboard":
-				return (
-					<div className={mainContentClass}>
-						<Dashboard
-							user={user}
-							handleLogout={handleLogout}
-							setCurrentPage={setCurrentPage}
-							chatMessages={chatMessages}
-						/>
-					</div>
-				);
-			case "chatbot":
-				return (
-					<div className={mainContentClass}>
-						<ChatbotPage
-							chatMessages={chatMessages}
-							inputMessage={inputMessage}
-							setInputMessage={setInputMessage}
-							handleSendMessage={handleSendMessage}
-							handleLogout={handleLogout}
-							setCurrentPage={setCurrentPage}
-							ocrResult={ocrResult}
-						/>
-					</div>
-				);
-			case "ocr":
-				return (
-					<div className={mainContentClass}>
-						<OcrPage
-							handleFileUpload={handleFileUpload}
-							handleLogout={handleLogout}
-							setCurrentPage={setCurrentPage}
-							setOcrResult={setOcrResult}
-						/>
-					</div>
-				);
-			case "ocr-result":
-				return (
-					<div className={mainContentClass}>
-						<OCRResultPage
-							ocrResult={ocrResult}
-							setCurrentPage={setCurrentPage}
-							setOcrResult={setOcrResult}
-						/>
-					</div>
-				);
-			case "settings":
-				return (
-					<div className={mainContentClass}>
-						<div className="settingsPage">
-							<h1>Settings</h1>
-							<p>Settings page content will go here...</p>
-						</div>
-					</div>
-				);
-			default:
-				return <LandingPage setCurrentPage={setCurrentPage} />;
-		}
-	};
+	const mainContentClass = isSidebarOpen
+		? "mainContentWithSidebar"
+		: "mainContentFull";
 
 	return (
 		<div style={styles.container}>
-			{user && pagesWithLayout.includes(currentPage) && (
+			{showLayout && (
 				<>
 					<Sidebar
-						currentPage={currentPage}
-						setCurrentPage={setCurrentPage}
 						user={user}
 						isSidebarOpen={isSidebarOpen}
 						toggleSidebar={toggleSidebar}
@@ -398,13 +356,140 @@ What specific aspect would you like me to explain?`;
 						user={user}
 						handleLogout={handleLogout}
 						toggleSidebar={toggleSidebar}
-						currentPage={currentPage}
 						isSidebarOpen={isSidebarOpen}
 					/>
 				</>
 			)}
-			{renderCurrentPage()}
+			<Routes>
+				{/* Public Routes */}
+				<Route
+					path="/"
+					element={
+						<PublicRoute user={user}>
+							<LandingPage />
+						</PublicRoute>
+					}
+				/>
+				<Route
+					path="/login"
+					element={
+						<PublicRoute user={user}>
+							<LoginPage handleLogin={handleLogin} />
+						</PublicRoute>
+					}
+				/>
+				<Route
+					path="/signup"
+					element={
+						<PublicRoute user={user}>
+							<SignupPage handleSignup={handleSignup} />
+						</PublicRoute>
+					}
+				/>
+
+				{/* Protected Routes */}
+				<Route
+					path="/dashboard"
+					element={
+						<ProtectedRoute user={user}>
+							<div className={mainContentClass}>
+								<Dashboard
+									user={user}
+									handleLogout={handleLogout}
+									chatMessages={chatMessages}
+								/>
+							</div>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/chatbot"
+					element={
+						<ProtectedRoute user={user}>
+							<div className={mainContentClass}>
+								<ChatbotPage
+									chatMessages={chatMessages}
+									inputMessage={inputMessage}
+									setInputMessage={setInputMessage}
+									handleSendMessage={handleSendMessage}
+									handleLogout={handleLogout}
+									ocrResult={ocrResult}
+								/>
+							</div>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/ocr"
+					element={
+						<ProtectedRoute user={user}>
+							<div className={mainContentClass}>
+								<OcrPage
+									handleFileUpload={handleFileUpload}
+									handleLogout={handleLogout}
+									setOcrResult={setOcrResult}
+								/>
+							</div>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/ocr-result"
+					element={
+						<ProtectedRoute user={user}>
+							<div className={mainContentClass}>
+								<OCRResultPage
+									ocrResult={ocrResult}
+									setOcrResult={setOcrResult}
+								/>
+							</div>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/test"
+					element={
+						<ProtectedRoute user={user}>
+							<div className={mainContentClass}>
+								<TestPage setActiveTest={setActiveTest} />
+							</div>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/take-test"
+					element={
+						<ProtectedRoute user={user}>
+							<div className={mainContentClass}>
+								<TakeTestPage activeTest={activeTest} />
+							</div>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/settings"
+					element={
+						<ProtectedRoute user={user}>
+							<div className={mainContentClass}>
+								<SettingsPage />
+							</div>
+						</ProtectedRoute>
+					}
+				/>
+
+				{/* Catch all route */}
+				<Route path="*" element={<Navigate to="/" replace />} />
+			</Routes>
 		</div>
+	);
+};
+
+// Main App Component with Router
+const App = () => {
+	return (
+		<BrowserRouter>
+			<AppContent />
+		</BrowserRouter>
 	);
 };
 

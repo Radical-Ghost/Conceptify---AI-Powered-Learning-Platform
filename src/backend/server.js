@@ -98,6 +98,7 @@ app.get("/api/ocr/results", (req, res) => {
 							) + "..." || "No text available",
 					};
 				} catch (err) {
+					console.error("❌ Error reading OCR result file:", err);
 					return {
 						filename: file,
 						originalName: file
@@ -170,6 +171,23 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 				pythonOutput.substring(0, 200) + "..."
 			);
 			const pythonResult = JSON.parse(pythonOutput);
+			const summaryText =
+				pythonResult.summary ||
+				pythonResult.aiSummary ||
+				pythonResult.data?.ai_analysis?.summary ||
+				"";
+			const summaryModel =
+				pythonResult.summary_model ||
+				pythonResult.data?.ai_analysis?.summary_model ||
+				"facebook/bart-large-cnn";
+			const summaryDetails =
+				pythonResult.summaryDetails ||
+				pythonResult.data?.ai_analysis?.summary_details ||
+				{};
+			const summaryTime =
+				pythonResult.summaryTime ??
+				pythonResult.data?.processing_metadata?.summary_time ??
+				0;
 
 			// Transform the response to match frontend expectations
 			const transformedResult = {
@@ -201,6 +219,10 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 							pythonResult.readingTime || "1 min",
 						key_topics: pythonResult.keyTopics || [],
 						confidence_score: pythonResult.confidenceScore || 0.85,
+						summary: summaryText,
+						summary_model: summaryText ? summaryModel : "",
+						summary_details: summaryDetails,
+						summary_time: summaryTime,
 					},
 					processing_metadata: pythonResult.processingMetadata || {
 						processing_time: "1.2s",
@@ -227,6 +249,10 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 
 			// Add filename to the result before saving
 			transformedResult.savedFileName = resultFileName;
+			transformedResult.summary = summaryText;
+			transformedResult.summaryModel = summaryText ? summaryModel : "";
+			transformedResult.summaryDetails = summaryDetails;
+			transformedResult.summaryTime = summaryTime;
 
 			fs.writeFileSync(
 				resultFilePath,

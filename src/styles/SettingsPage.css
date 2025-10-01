@@ -1,0 +1,41 @@
+.settingsContainer {
+	padding: 2rem;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.settingsHeader {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 2rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 2px solid #e2e8f0;
+}
+
+.settingsIcon {
+	width: 32px;
+	height: 32px;
+	color: #3b82f6;
+}
+
+.settingsTitle {
+	font-size: 2rem;
+	font-weight: 700;
+	color: #1e293b;
+	margin: 0;
+}
+
+.settingsContent {
+	background: white;
+	border-radius: 12px;
+	padding: 3rem;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	text-align: center;
+}
+
+.comingSoonText {
+	font-size: 1.125rem;
+	color: #64748b;
+	margin: 0;
+}
