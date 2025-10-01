@@ -11,7 +11,9 @@ const SettingsPage = () => {
 			</div>
 
 			<div className="settingsContent">
-				<p className="comingSoonText">Settings options coming soon...</p>
+				<p className="comingSoonText">
+					Settings options coming soon...
+				</p>
 			</div>
 		</div>
 	);
