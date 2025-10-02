@@ -29,6 +29,8 @@ const TakeTestPage = ({ activeTest }) => {
 				"Network Security",
 			],
 			correctAnswer: 0,
+			explanation:
+				"Machine Learning Fundamentals is the main topic as it is introduced in the opening paragraph and discussed throughout the document with various examples and use cases.",
 		},
 		{
 			id: 2,
@@ -41,6 +43,8 @@ const TakeTestPage = ({ activeTest }) => {
 				"Software Testing",
 			],
 			correctAnswer: 2,
+			explanation:
+				"Algorithm Optimization is emphasized as the document focuses on improving computational efficiency and reducing time complexity in various scenarios.",
 		},
 		{
 			id: 3,
@@ -53,6 +57,8 @@ const TakeTestPage = ({ activeTest }) => {
 				"Easier maintenance",
 			],
 			correctAnswer: 2,
+			explanation:
+				"Better scalability is highlighted as the key benefit because the approach allows systems to handle increasing loads efficiently without significant architectural changes.",
 		},
 		{
 			id: 4,
@@ -64,6 +70,8 @@ const TakeTestPage = ({ activeTest }) => {
 				"V-model",
 			],
 			correctAnswer: 1,
+			explanation:
+				"Agile methodology is recommended due to its flexibility, iterative approach, and ability to adapt to changing requirements, which aligns with modern development practices.",
 		},
 		{
 			id: 5,
@@ -75,6 +83,8 @@ const TakeTestPage = ({ activeTest }) => {
 				"Traditional methods are better",
 			],
 			correctAnswer: 1,
+			explanation:
+				"The document concludes that the approach is highly effective based on the empirical results, case studies, and performance metrics presented throughout the analysis.",
 		},
 	];
 
@@ -117,6 +127,9 @@ const TakeTestPage = ({ activeTest }) => {
 			correctAnswer: q.correctAnswer,
 			userAnswer: selectedAnswers[idx],
 			isCorrect: selectedAnswers[idx] === q.correctAnswer,
+			explanation:
+				q.explanation ||
+				"This is the correct answer based on the concepts discussed in the document.",
 		}));
 
 		const testResult = {

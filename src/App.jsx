@@ -16,6 +16,7 @@ import OcrPage from "./components/OcrPage";
 import OCRResultPage from "./components/OcrResultPage";
 import TestPage from "./components/TestPage";
 import TakeTestPage from "./components/TakeTestPage";
+import TestResultPage from "./components/TestResultPage";
 import SettingsPage from "./components/SettingsPage";
 import Sidebar from "./components/SideBar";
 import Navbar from "./components/Navbar";
@@ -435,7 +436,6 @@ What specific aspect would you like me to explain?`;
 						</PublicRoute>
 					}
 				/>
-
 				{/* Protected Routes */}
 				<Route
 					path="/dashboard"
@@ -519,6 +519,16 @@ What specific aspect would you like me to explain?`;
 					}
 				/>
 				<Route
+					path="/test-result"
+					element={
+						<ProtectedRoute user={user}>
+							<div className={mainContentClass}>
+								<TestResultPage />
+							</div>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
 					path="/settings"
 					element={
 						<ProtectedRoute user={user}>
@@ -527,8 +537,7 @@ What specific aspect would you like me to explain?`;
 							</div>
 						</ProtectedRoute>
 					}
-				/>
-
+				/>{" "}
 				{/* Catch all route */}
 				<Route path="*" element={<Navigate to="/" replace />} />
 			</Routes>

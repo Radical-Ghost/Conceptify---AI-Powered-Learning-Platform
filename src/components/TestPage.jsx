@@ -250,7 +250,15 @@ const TestPage = ({ setActiveTest }) => {
 					) : (
 						<div className="historyList">
 							{testHistory.map((test, index) => (
-								<div key={index} className="historyItem">
+								<div
+									key={index}
+									className="historyItem"
+									onClick={() =>
+										navigate("/test-result", {
+											state: { testResult: test },
+										})
+									}
+									style={{ cursor: "pointer" }}>
 									<div className="historyIcon">
 										<Award
 											size={20}
