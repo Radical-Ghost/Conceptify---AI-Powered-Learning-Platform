@@ -110,7 +110,15 @@ const TakeTestPage = ({ activeTest }) => {
 
 		const score = Math.round((correct / totalQuestions) * 100);
 
-		// Save to history
+		// Save to history with detailed question data
+		const detailedAnswers = dummyQuestions.map((q, idx) => ({
+			question: q.question,
+			options: q.options,
+			correctAnswer: q.correctAnswer,
+			userAnswer: selectedAnswers[idx],
+			isCorrect: selectedAnswers[idx] === q.correctAnswer,
+		}));
+
 		const testResult = {
 			documentId: activeTest.documentId,
 			documentName: activeTest.documentName,
@@ -119,6 +127,7 @@ const TakeTestPage = ({ activeTest }) => {
 			questionsAnswered: Object.keys(selectedAnswers).length,
 			totalQuestions: totalQuestions,
 			correctAnswers: correct,
+			detailedAnswers: detailedAnswers, // Store detailed Q&A
 		};
 
 		const history = JSON.parse(localStorage.getItem("testHistory")) || [];

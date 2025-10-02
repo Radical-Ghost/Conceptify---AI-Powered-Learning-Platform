@@ -1,7 +1,7 @@
 .mainContentWithSidebar {
 	margin-left: 280px;
 	min-height: 100vh;
-	background-color: #f8fafc;
+	background-color: var(--bg-secondary, #f8fafc);
 	transition: margin-left 0.3s ease-in-out;
 	padding-top: 70px;
 }
@@ -9,7 +9,7 @@
 .mainContentFull {
 	margin-left: 0;
 	min-height: 100vh;
-	background-color: #f8fafc;
+	background-color: var(--bg-secondary, #f8fafc);
 	transition: margin-left 0.3s ease-in-out;
 	padding-top: 70px;
 }

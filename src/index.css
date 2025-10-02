@@ -1,3 +1,42 @@
+/* Theme Variables */
+:root[data-theme="light"] {
+	--bg-primary: #ffffff;
+	--bg-secondary: #f8fafc;
+	--bg-tertiary: #f1f5f9;
+	--text-primary: #1e293b;
+	--text-secondary: #64748b;
+	--text-tertiary: #94a3b8;
+	--border-color: #e2e8f0;
+	--border-color-hover: #cbd5e1;
+	--accent-primary: #3b82f6;
+	--accent-hover: #2563eb;
+	--success: #10b981;
+	--danger: #ef4444;
+	--danger-hover: #dc2626;
+	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+	--shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+	--shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+:root[data-theme="dark"] {
+	--bg-primary: #0f172a;
+	--bg-secondary: #1e293b;
+	--bg-tertiary: #334155;
+	--text-primary: #f1f5f9;
+	--text-secondary: #cbd5e1;
+	--text-tertiary: #94a3b8;
+	--border-color: #334155;
+	--border-color-hover: #475569;
+	--accent-primary: #3b82f6;
+	--accent-hover: #2563eb;
+	--success: #10b981;
+	--danger: #ef4444;
+	--danger-hover: #dc2626;
+	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+	--shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+	--shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+}
+
 :root {
 	font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
@@ -7,6 +46,10 @@
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+
+	/* Apply theme colors */
+	background-color: var(--bg-secondary);
+	color: var(--text-primary);
 }
 
 * Hide scrollbar for Chrome,
@@ -39,6 +82,9 @@ body {
 	place-items: center;
 	min-width: 320px;
 	min-height: 100vh;
+	background-color: var(--bg-secondary);
+	color: var(--text-primary);
+	transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1 {
@@ -65,15 +111,4 @@ button:focus-visible {
 	outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-	:root {
-		color: #213547;
-		background-color: #ffffff;
-	}
-	a:hover {
-		color: #747bff;
-	}
-	button {
-		background-color: #f9f9f9;
-	}
-}
+/* Remove prefers-color-scheme media query - we handle theme manually */

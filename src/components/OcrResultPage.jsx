@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import "../styles/OcrResultPage.css";
 
-const OCRResultPage = ({ ocrResult, setOcrResult }) => {
+const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 	const navigate = useNavigate();
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedText, setEditedText] = useState(
@@ -22,6 +22,7 @@ const OCRResultPage = ({ ocrResult, setOcrResult }) => {
 	);
 	const [selectedTab, setSelectedTab] = useState("final"); // 'original', 'enhanced', 'final'
 	const [saveMessage, setSaveMessage] = useState("");
+	const [addToChatMessage, setAddToChatMessage] = useState("");
 	const summaryDetails =
 		ocrResult?.summaryDetails ||
 		ocrResult?.processingMetadata?.summary_details ||
@@ -112,6 +113,14 @@ const OCRResultPage = ({ ocrResult, setOcrResult }) => {
 			ocrResult?.finalExtractedText || ocrResult?.extractedText || ""
 		);
 		setIsEditing(false);
+	};
+
+	const handleAddToChat = () => {
+		if (addDocumentToChat && ocrResult) {
+			addDocumentToChat(ocrResult);
+			setAddToChatMessage("Document added to chat! ✅");
+			setTimeout(() => setAddToChatMessage(""), 3000);
+		}
 	};
 
 	return (
@@ -400,8 +409,28 @@ const OCRResultPage = ({ ocrResult, setOcrResult }) => {
 					{/* Actions */}
 					<div className="actionCard">
 						<h2 className="resultTitle">Learning Actions</h2>
+
+						{/* Add to Chat Message */}
+						{addToChatMessage && (
+							<div
+								style={{
+									padding: "0.75rem 1rem",
+									marginBottom: "1rem",
+									borderRadius: "0.5rem",
+									backgroundColor: "#dcfce7",
+									border: "1px solid #10b981",
+									color: "#059669",
+									display: "flex",
+									alignItems: "center",
+									gap: "0.5rem",
+								}}>
+								<CheckCircle size={16} />
+								<span>{addToChatMessage}</span>
+							</div>
+						)}
+
 						<button
-							onClick={() => navigate("/chatbot")}
+							onClick={handleAddToChat}
 							className="actionButton actionButtonBlue">
 							<div className="actionContent">
 								<MessageSquare
@@ -411,10 +440,10 @@ const OCRResultPage = ({ ocrResult, setOcrResult }) => {
 								/>
 								<div>
 									<div className="actionTitle">
-										Discuss with AI
+										Add to AI Chat
 									</div>
 									<div className="actionDescription">
-										Ask questions about this content
+										Load this document for AI discussions
 									</div>
 								</div>
 							</div>

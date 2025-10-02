@@ -48,7 +48,26 @@ const AppContent = () => {
 	const [chatMessages, setChatMessages] = useState([]);
 	const [inputMessage, setInputMessage] = useState("");
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+	const [chatDocuments, setChatDocuments] = useState([]);
 	const [isSessionValidating, setIsSessionValidating] = useState(true);
+
+	// Theme management - Load and apply theme on mount
+	useEffect(() => {
+		const savedTheme = localStorage.getItem("conceptify_theme") || "light";
+		document.documentElement.setAttribute("data-theme", savedTheme);
+
+		// Listen for theme changes from SettingsPage
+		const handleThemeChange = () => {
+			const currentTheme =
+				localStorage.getItem("conceptify_theme") || "light";
+			document.documentElement.setAttribute("data-theme", currentTheme);
+		};
+
+		// Check for theme changes every second (simple polling)
+		const themeCheckInterval = setInterval(handleThemeChange, 100);
+
+		return () => clearInterval(themeCheckInterval);
+	}, []);
 
 	// Validate session with server
 	const validateSession = useCallback(async () => {
@@ -157,9 +176,39 @@ const AppContent = () => {
 		setChatMessages([]);
 		setOcrResult(null);
 		setIsSidebarOpen(false);
+		setChatDocuments([]);
 
 		// Clear localStorage
 		localStorage.removeItem("conceptify_user");
+	};
+
+	// Add document to chat context
+	const addDocumentToChat = (document) => {
+		const newDocument = {
+			id: Date.now().toString(),
+			name: document.originalFileName || document.fileName || "Document",
+			summary: document.summary || "",
+			content:
+				document.finalExtractedText || document.extractedText || "",
+			keyTopics: document.keyTopics || [],
+			addedAt: Date.now(),
+			wordCount: document.wordCount || 0,
+			readingTime: document.readingTime || 0,
+		};
+
+		setChatDocuments((prev) => {
+			// Check if document already exists
+			const exists = prev.some((doc) => doc.name === newDocument.name);
+			if (exists) {
+				return prev; // Don't add duplicates
+			}
+			return [...prev, newDocument];
+		});
+
+		// Navigate to chatbot page
+		navigate("/chatbot");
+
+		return newDocument;
 	};
 
 	// Chat handlers
@@ -414,6 +463,8 @@ What specific aspect would you like me to explain?`;
 									handleSendMessage={handleSendMessage}
 									handleLogout={handleLogout}
 									ocrResult={ocrResult}
+									chatDocuments={chatDocuments}
+									setChatDocuments={setChatDocuments}
 								/>
 							</div>
 						</ProtectedRoute>
@@ -441,6 +492,7 @@ What specific aspect would you like me to explain?`;
 								<OCRResultPage
 									ocrResult={ocrResult}
 									setOcrResult={setOcrResult}
+									addDocumentToChat={addDocumentToChat}
 								/>
 							</div>
 						</ProtectedRoute>

@@ -1,7 +1,7 @@
 .sidebar {
 	width: 280px;
-	background-color: white;
-	border-right: 1px solid #e2e8f0;
+	background-color: var(--bg-primary);
+	border-right: 1px solid var(--border-color);
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
@@ -10,7 +10,7 @@
 	top: 0;
 	z-index: 1000;
 	box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-	transition: transform 0.3s ease-in-out;
+	transition: transform 0.3s ease-in-out, background-color 0.3s ease;
 }
 
 .sidebarOpen {
@@ -34,7 +34,7 @@
 
 .sidebarHeader {
 	padding: 1.5rem;
-	border-bottom: 1px solid #f1f5f9;
+	border-bottom: 1px solid var(--border-color);
 	display: grid;
 }
 
@@ -63,7 +63,7 @@
 }
 
 .logoButton:hover {
-	background-color: #f1f5f9;
+	background-color: var(--bg-tertiary);
 }
 
 .logoImage {
@@ -75,7 +75,7 @@
 .sidebarTitle {
 	font-size: 1.25rem;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin: 0 0.75rem;
 	flex: 1;
 }

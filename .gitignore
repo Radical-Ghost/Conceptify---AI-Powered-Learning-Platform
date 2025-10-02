@@ -37,6 +37,10 @@ wheels/
 #models - too big (pretrained)
 models/
 
+# Hugging Face model cache (downloaded automatically)
+.cache/
+*/.cache/
+
 #envs
 *.env
 

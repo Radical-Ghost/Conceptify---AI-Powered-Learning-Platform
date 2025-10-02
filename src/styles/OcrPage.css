@@ -6,6 +6,8 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
+	background-color: var(--bg-secondary);
+	transition: background-color 0.3s ease;
 }
 
 .ocrHeader {
@@ -24,12 +26,12 @@
 .headerTitle h1 {
 	font-size: 2rem;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin: 0;
 }
 
 .ocrSubtitle {
-	color: #64748b;
+	color: var(--text-secondary);
 	font-size: 1.125rem;
 }
 
@@ -51,27 +53,27 @@
 .processingTitle {
 	font-size: 1.25rem;
 	font-weight: 600;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin-bottom: 0.75rem;
 }
 
 .processingText {
-	color: #64748b;
+	color: var(--text-secondary);
 }
 
 .uploadArea {
-	border: 2px dashed #cbd5e1;
+	border: 2px dashed var(--border-color);
 	border-radius: 16px;
 	padding: 3.5rem 2rem;
 	text-align: center;
 	transition: all 0.3s ease;
-	background-color: white;
+	background-color: var(--bg-primary);
 	cursor: pointer;
 }
 
 .uploadArea:hover {
 	border-color: #8b5cf6;
-	background-color: #f8fafc;
+	background-color: var(--bg-tertiary);
 }
 
 .uploadAreaHover {
@@ -142,13 +144,15 @@
 
 /* History Section */
 .historySection {
-	background: white;
+	background: var(--bg-primary);
 	border-radius: 12px;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+	box-shadow: var(--shadow-sm);
 	padding: 1.5rem;
 	height: fit-content;
 	max-height: 600px;
 	overflow-y: auto;
+	border: 1px solid var(--border-color);
+	transition: background-color 0.3s ease;
 }
 
 .historyHeader {
@@ -164,19 +168,19 @@
 .historyTitle h3 {
 	font-size: 1.25rem;
 	font-weight: 600;
-	color: #374151;
+	color: var(--text-primary);
 	margin: 0;
 }
 
 .historyLoading {
 	text-align: center;
-	color: #6b7280;
+	color: var(--text-secondary);
 	padding: 2rem 0;
 }
 
 .historyEmpty {
 	text-align: center;
-	color: #6b7280;
+	color: var(--text-secondary);
 	padding: 2rem 0;
 }
 
@@ -200,15 +204,16 @@
 	align-items: flex-start;
 	gap: 0.75rem;
 	padding: 1rem;
-	border: 1px solid #e5e7eb;
+	border: 1px solid var(--border-color);
 	border-radius: 8px;
 	cursor: pointer;
 	transition: all 0.2s ease;
+	background-color: var(--bg-secondary);
 }
 
 .historyItem:hover {
 	border-color: #8b5cf6;
-	background-color: #faf5ff;
+	background-color: var(--bg-tertiary);
 	transform: translateY(-1px);
 }
 
@@ -224,7 +229,7 @@
 
 .historyItemName {
 	font-weight: 600;
-	color: #374151;
+	color: var(--text-primary);
 	font-size: 0.875rem;
 	margin-bottom: 0.25rem;
 	white-space: nowrap;
@@ -233,7 +238,7 @@
 }
 
 .historyItemPreview {
-	color: #6b7280;
+	color: var(--text-secondary);
 	font-size: 0.75rem;
 	line-height: 1.4;
 	margin-bottom: 0.5rem;

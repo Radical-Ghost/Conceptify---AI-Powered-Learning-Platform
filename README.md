@@ -31,6 +31,8 @@
 -   **Topic Recognition** - Automatic identification of key concepts and subjects
 -   **Interactive Learning** - Ask questions about your study materials
 -   **Smart Context Switching** - Seamless transitions between different documents
+-   **Quick Document Upload** ⚡ - Add PDFs directly from chat with + button
+-   **Multi-Document Context** - Load multiple documents for enhanced AI responses
 
 ### **Robust Session Management**
 
@@ -38,6 +40,14 @@
 -   **Auto-Recovery** - Handles server restarts and connection issues gracefully
 -   **Responsive Design** - Works seamlessly across devices
 -   **Professional UI/UX** - Clean, modern interface with loading states
+
+### **Test Generation & Review**
+
+-   **Auto-Generated Tests** - AI-powered question generation from documents
+-   **Interactive Test Interface** - Clean UI with timer and progress tracking
+-   **Detailed Test Review** 📊 - Click any test to see all questions with answers
+-   **Visual Feedback** - Color-coded correct/incorrect answers with badges
+-   **Performance Analytics** - Score tracking and test history
 
 ### **Content Analytics**
 
@@ -68,6 +78,8 @@
 -   **Tesseract OCR** - Industry-standard OCR engine
 -   **PyMuPDF (Fitz)** - PDF text extraction and processing
 -   **NLTK** - Natural language processing and text correction
+-   **Transformers (Hugging Face)** - BART-Large-CNN for AI summarization
+-   **PyTorch** - Deep learning framework for model inference
 -   **OpenCV & Pillow** - Image processing and enhancement
 -   **NumPy** - Numerical computing for image analysis
 
@@ -105,7 +117,17 @@ source .venv/bin/activate
 
 # Install Python dependencies
 uv sync
+
+# Download NLTK data (required for text processing)
+python -c "import nltk; nltk.download('words'); nltk.download('stopwords')"
 ```
+
+> **Note:** On first run, the BART-Large-CNN model (~1.6 GB) will be automatically downloaded from Hugging Face and cached locally at:
+>
+> -   **Windows:** `C:\Users\<YourUsername>\.cache\huggingface\hub\`
+> -   **macOS/Linux:** `~/.cache/huggingface/hub/`
+>
+> This is a one-time download. The model will be reused for all future runs.
 
 ### **3. Node.js Frontend Setup**
 
@@ -324,6 +346,30 @@ uv cache clean
 uv sync --reinstall
 ```
 
+**AI Model Download Issues:**
+
+```bash
+# If BART-Large-CNN model download fails or is slow:
+
+# Option 1: Use a different Hugging Face mirror
+export HF_ENDPOINT=https://hf-mirror.com  # For Chinese users
+
+# Option 2: Pre-download the model manually
+python -c "from transformers import pipeline; pipeline('summarization', model='facebook/bart-large-cnn')"
+
+# Option 3: Check cache location and clear if corrupted
+# Windows: C:\Users\<YourUsername>\.cache\huggingface\
+# macOS/Linux: ~/.cache/huggingface/
+```
+
+**GPU vs CPU Performance:**
+
+The application automatically detects and uses GPU if available (CUDA-enabled):
+
+-   **With GPU:** Faster processing, larger text chunks (~1200 words)
+-   **Without GPU:** CPU mode, smaller chunks (~600 words)
+-   **Model size:** ~1.6 GB (downloaded once and cached)
+
 **Port conflicts:**
 
 ```bash
@@ -337,10 +383,18 @@ npx kill-port 5001 5173
 
 ---
 
-## 🚀 Future Roadmap
+## 🤖 AI Models
 
--   [ ] **React Router Integration** - Full routing system
--   [ ] **Advanced AI Models** - Integration with Hugging Face transformers
+This project uses **BART-Large-CNN** for text summarization. The model (~1.6 GB) is **automatically downloaded** on first run and cached locally.
+
+� **For detailed model setup, troubleshooting, and offline installation, see [MODELS.md](MODELS.md)**
+
+---
+
+## �🚀 Future Roadmap
+
+-   [x] **React Router Integration** - Full routing system ✅
+-   [x] **Advanced AI Models** - BART-Large-CNN for summarization ✅
 -   [ ] **Analytics Dashboard** - Learning progress tracking
 -   [ ] **Quiz Generation** - Adaptive question generation
 -   [ ] **Database Integration** - MongoDB/Firebase storage

@@ -1,7 +1,12 @@
+/* Settings Page Styles - Theme variables are in index.css */
+
 .settingsContainer {
 	padding: 2rem;
 	max-width: 1200px;
 	margin: 0 auto;
+	background-color: var(--bg-secondary);
+	min-height: 100vh;
+	position: relative;
 }
 
 .settingsHeader {
@@ -10,32 +15,314 @@
 	gap: 1rem;
 	margin-bottom: 2rem;
 	padding-bottom: 1.5rem;
-	border-bottom: 2px solid #e2e8f0;
+	border-bottom: 2px solid var(--border-color);
 }
 
 .settingsIcon {
 	width: 32px;
 	height: 32px;
-	color: #3b82f6;
+	color: var(--accent-primary);
 }
 
 .settingsTitle {
 	font-size: 2rem;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin: 0;
 }
 
 .settingsContent {
-	background: white;
-	border-radius: 12px;
-	padding: 3rem;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-	text-align: center;
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
 }
 
-.comingSoonText {
-	font-size: 1.125rem;
-	color: #64748b;
+/* Save Message Toast */
+.saveMessageToast {
+	position: fixed;
+	top: 2rem;
+	right: 2rem;
+	background-color: var(--success);
+	color: white;
+	padding: 1rem 1.5rem;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	box-shadow: var(--shadow-lg);
+	animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s;
+	z-index: 1000;
+	font-weight: 500;
+}
+
+@keyframes slideInRight {
+	from {
+		transform: translateX(100%);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+@keyframes fadeOut {
+	to {
+		opacity: 0;
+		transform: translateX(100%);
+	}
+}
+
+/* Settings Section */
+.settingsSection {
+	background-color: var(--bg-primary);
+	border-radius: 16px;
+	padding: 2rem;
+	box-shadow: var(--shadow-sm);
+	border: 1px solid var(--border-color);
+	transition: all 0.3s ease;
+}
+
+.settingsSection:hover {
+	box-shadow: var(--shadow-md);
+}
+
+.sectionHeader {
+	margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-bottom: 0.5rem;
+	color: var(--text-primary);
+}
+
+.sectionTitle svg {
+	color: var(--accent-primary);
+}
+
+.sectionTitle h2 {
+	font-size: 1.5rem;
+	font-weight: 600;
 	margin: 0;
+	color: var(--text-primary);
+}
+
+.sectionDescription {
+	font-size: 0.95rem;
+	color: var(--text-secondary);
+	margin: 0;
+	padding-left: 2rem;
+}
+
+/* Settings Card */
+.settingsCard {
+	background-color: var(--bg-secondary);
+	border-radius: 12px;
+	padding: 0;
+	border: 1px solid var(--border-color);
+	overflow: hidden;
+}
+
+.settingItem {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1.25rem 1.5rem;
+	transition: background-color 0.2s ease;
+}
+
+.settingItem:hover {
+	background-color: var(--bg-tertiary);
+}
+
+.settingItemColumn {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 1rem;
+}
+
+.settingInfo {
+	flex: 1;
+}
+
+.settingLabel {
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--text-primary);
+	margin-bottom: 0.25rem;
+}
+
+.settingDesc {
+	font-size: 0.875rem;
+	color: var(--text-secondary);
+}
+
+.dangerText {
+	color: var(--danger);
+	font-weight: 500;
+}
+
+.settingDivider {
+	height: 1px;
+	background-color: var(--border-color);
+	margin: 0 1.5rem;
+}
+
+/* Toggle Switch */
+.toggleSwitch {
+	position: relative;
+	width: 52px;
+	height: 28px;
+	background-color: var(--border-color);
+	border-radius: 14px;
+	border: none;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+	flex-shrink: 0;
+}
+
+.toggleSwitch:hover {
+	background-color: var(--border-color-hover);
+}
+
+.toggleSwitch.active {
+	background-color: var(--accent-primary);
+}
+
+.toggleSwitch.active:hover {
+	background-color: var(--accent-hover);
+}
+
+.toggleSlider {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 24px;
+	height: 24px;
+	background-color: white;
+	border-radius: 50%;
+	transition: transform 0.3s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggleSwitch.active .toggleSlider {
+	transform: translateX(24px);
+}
+
+/* Select Dropdown */
+.settingSelect {
+	padding: 0.625rem 1rem;
+	border-radius: 8px;
+	border: 2px solid var(--border-color);
+	background-color: var(--bg-primary);
+	color: var(--text-primary);
+	font-size: 0.95rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	min-width: 150px;
+}
+
+.settingSelect:hover {
+	border-color: var(--accent-primary);
+}
+
+.settingSelect:focus {
+	outline: none;
+	border-color: var(--accent-primary);
+	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Action Buttons */
+.actionButton {
+	display: flex;
+	align-items: center;
+	gap: 0.625rem;
+	padding: 0.75rem 1.5rem;
+	border-radius: 10px;
+	border: none;
+	font-size: 0.95rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+}
+
+.primaryButton {
+	background-color: var(--accent-primary);
+	color: white;
+}
+
+.primaryButton:hover {
+	background-color: var(--accent-hover);
+	transform: translateY(-1px);
+	box-shadow: var(--shadow-md);
+}
+
+.dangerButton {
+	background-color: transparent;
+	color: var(--danger);
+	border: 2px solid var(--danger);
+}
+
+.dangerButton:hover {
+	background-color: var(--danger);
+	color: white;
+	transform: translateY(-1px);
+	box-shadow: var(--shadow-md);
+}
+
+.dangerButtonStrong {
+	background-color: var(--danger);
+	color: white;
+	border: none;
+}
+
+.dangerButtonStrong:hover {
+	background-color: var(--danger-hover);
+	transform: translateY(-1px);
+	box-shadow: var(--shadow-lg);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+	.settingsContainer {
+		padding: 1rem;
+	}
+
+	.settingsSection {
+		padding: 1.5rem;
+	}
+
+	.settingsTitle {
+		font-size: 1.5rem;
+	}
+
+	.sectionTitle h2 {
+		font-size: 1.25rem;
+	}
+
+	.settingItem {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 1rem;
+	}
+
+	.toggleSwitch {
+		align-self: flex-start;
+	}
+
+	.actionButton {
+		width: 100%;
+		justify-content: center;
+	}
+
+	.saveMessageToast {
+		top: 1rem;
+		right: 1rem;
+		left: 1rem;
+	}
 }

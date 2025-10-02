@@ -8,6 +8,9 @@ import {
 	Award,
 	Clock,
 	Calendar,
+	X,
+	CheckCircle,
+	XCircle,
 } from "lucide-react";
 import "../styles/ChatbotPage.css";
 
@@ -18,29 +21,40 @@ const ChatbotPage = ({
 	handleSendMessage,
 	handleLogout,
 	ocrResult,
+	chatDocuments,
+	setChatDocuments,
 }) => {
 	const [chatSessions, setChatSessions] = useState([]);
 	const [currentSessionId, setCurrentSessionId] = useState(null);
 	const [testHistory, setTestHistory] = useState([]);
 	const [localMessages, setLocalMessages] = useState([]);
+	const [selectedTest, setSelectedTest] = useState(null);
+	const [showTestModal, setShowTestModal] = useState(false);
+	const [showDocumentSelector, setShowDocumentSelector] = useState(false);
+	const [ocrHistory, setOcrHistory] = useState([]);
 
-	// Load chat sessions and test history on mount
+	// Load chat sessions, test history, and OCR history on mount
 	useEffect(() => {
 		loadChatSessions();
 		loadTestHistory();
+		loadOcrHistory();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	// Sync messages when current session changes
+	// Sync messages and documents when current session changes
 	useEffect(() => {
 		if (currentSessionId) {
 			const session = chatSessions.find((s) => s.id === currentSessionId);
 			if (session) {
 				setLocalMessages(session.messages);
+				// Load documents for this session
+				setChatDocuments(session.documents || []);
 			}
 		} else {
 			setLocalMessages([]);
+			setChatDocuments([]);
 		}
-	}, [currentSessionId, chatSessions]);
+	}, [currentSessionId, chatSessions, setChatDocuments]);
 
 	const loadChatSessions = () => {
 		const saved = localStorage.getItem("chatSessions");
@@ -61,6 +75,19 @@ const ChatbotPage = ({
 		);
 	};
 
+	const loadOcrHistory = async () => {
+		try {
+			const response = await fetch(
+				"http://localhost:5001/api/ocr/results"
+			);
+			const data = await response.json();
+			setOcrHistory(data.results || []);
+		} catch (error) {
+			console.error("Error fetching OCR history:", error);
+			setOcrHistory([]);
+		}
+	};
+
 	const saveChatSessions = (sessions) => {
 		localStorage.setItem("chatSessions", JSON.stringify(sessions));
 		setChatSessions(sessions);
@@ -71,6 +98,7 @@ const ChatbotPage = ({
 			id: Date.now().toString(),
 			title: `Chat ${chatSessions.length + 1}`,
 			messages: [],
+			documents: [], // Store loaded documents for this chat session
 			createdAt: Date.now(),
 			updatedAt: Date.now(),
 			metadata: {
@@ -106,6 +134,18 @@ const ChatbotPage = ({
 
 	const switchChat = (sessionId) => {
 		setCurrentSessionId(sessionId);
+	};
+
+	const deleteAllChats = () => {
+		if (
+			window.confirm(
+				"Are you sure you want to delete all chats? This cannot be undone."
+			)
+		) {
+			saveChatSessions([]);
+			setCurrentSessionId(null);
+			setChatDocuments([]);
+		}
 	};
 
 	const handleLocalSendMessage = () => {
@@ -149,6 +189,98 @@ const ChatbotPage = ({
 		setInputMessage("");
 	};
 
+	const handleTestClick = (test) => {
+		console.log("=== Test Clicked Debug ===");
+		console.log("Full test object:", test);
+		console.log("Has detailedAnswers:", !!test.detailedAnswers);
+		console.log(
+			"Number of detailed answers:",
+			test.detailedAnswers?.length
+		);
+		console.log("showTestModal will be set to:", true);
+		console.log("=========================");
+		setSelectedTest(test);
+		setShowTestModal(true);
+	};
+
+	const closeTestModal = () => {
+		setShowTestModal(false);
+		setSelectedTest(null);
+	};
+
+	const openDocumentSelector = () => {
+		setShowDocumentSelector(true);
+	};
+
+	const closeDocumentSelector = () => {
+		setShowDocumentSelector(false);
+	};
+
+	const handleDocumentSelect = async (document) => {
+		// Check if document is already added
+		const alreadyAdded = chatDocuments.some(
+			(doc) => doc.id === document.filename
+		);
+		if (alreadyAdded) {
+			alert(`"${document.originalName}" is already in your chat context`);
+			return;
+		}
+
+		try {
+			// Fetch the full document data
+			const response = await fetch(
+				`http://localhost:5001/api/ocr/result/${document.filename}`
+			);
+			const fullResult = await response.json();
+
+			// Extract the data from the response
+			const extractedText =
+				fullResult.data?.extraction_results?.extracted_text ||
+				fullResult.data?.extraction_results?.final_extracted_text ||
+				"";
+			const summary = fullResult.data?.analysis_results?.summary || "";
+			const keyTopics =
+				fullResult.data?.analysis_results?.key_topics || [];
+			const wordCount =
+				fullResult.data?.analysis_results?.word_count || 0;
+			const readingTime =
+				fullResult.data?.analysis_results?.reading_time || 0;
+
+			// Add document to chat context
+			const newDocument = {
+				id: document.filename,
+				name: document.originalName,
+				summary: summary,
+				content: extractedText,
+				keyTopics: keyTopics,
+				addedAt: Date.now(),
+				wordCount: wordCount,
+				readingTime: readingTime,
+			};
+
+			const updatedDocuments = [...chatDocuments, newDocument];
+			setChatDocuments(updatedDocuments);
+
+			// Save documents to the current session
+			const updatedSessions = chatSessions.map((session) => {
+				if (session.id === currentSessionId) {
+					return {
+						...session,
+						documents: updatedDocuments,
+					};
+				}
+				return session;
+			});
+			saveChatSessions(updatedSessions);
+
+			setShowDocumentSelector(false);
+			alert(`✅ "${document.originalName}" added to chat context!`);
+		} catch (error) {
+			console.error("Error loading document:", error);
+			alert("Failed to load document. Please try again.");
+		}
+	};
+
 	const getCurrentSession = () => {
 		return chatSessions.find((s) => s.id === currentSessionId);
 	};
@@ -156,23 +288,41 @@ const ChatbotPage = ({
 	const currentSession = getCurrentSession();
 	const displayMessages = currentSession ? currentSession.messages : [];
 
+	// Debug: Log modal state
+	console.log(
+		"Modal State - showTestModal:",
+		showTestModal,
+		"selectedTest:",
+		selectedTest
+	);
+
 	return (
 		<div className="chatPageContent">
 			<div className="chatLayoutGrid">
 				{/* Chat Sessions Sidebar */}
 				<div className="chatSessionsSidebar">
 					<div className="sidebarSection">
-						<div className="sidebarHeader">
+						<div className="chatSidebarHeader">
 							<h3>
 								<MessageSquare size={18} />
 								Chat Sessions
 							</h3>
-							<button
-								onClick={createNewChat}
-								className="newChatBtn"
-								title="New Chat">
-								<Plus size={18} />
-							</button>
+							<div className="chatHeaderButtons">
+								<button
+									onClick={createNewChat}
+									className="newChatBtn"
+									title="New Chat">
+									<Plus size={18} />
+								</button>
+								{chatSessions.length > 0 && (
+									<button
+										onClick={deleteAllChats}
+										className="deleteAllChatsBtn"
+										title="Delete All Chats">
+										<Trash2 size={18} />
+									</button>
+								)}
+							</div>
 						</div>
 
 						<div className="sessionsList">
@@ -251,7 +401,9 @@ const ChatbotPage = ({
 								testHistory.map((test, index) => (
 									<div
 										key={index}
-										className="testHistoryCard">
+										className="testHistoryCard"
+										onClick={() => handleTestClick(test)}
+										style={{ cursor: "pointer" }}>
 										<div className="testIcon">
 											<Award
 												size={16}
@@ -320,6 +472,68 @@ const ChatbotPage = ({
 							</div>
 						</div>
 					</div>
+
+					{/* Loaded Documents Section */}
+					{chatDocuments && chatDocuments.length > 0 && (
+						<div className="loadedDocumentsSection">
+							<div className="documentsHeader">
+								<MessageSquare size={16} />
+								<span>
+									Loaded Documents ({chatDocuments.length})
+								</span>
+							</div>
+							<div className="documentsList">
+								{chatDocuments.map((doc) => (
+									<div key={doc.id} className="documentChip">
+										<div className="documentInfo">
+											<span className="documentName">
+												📄 {doc.name}
+											</span>
+											<span className="documentMeta">
+												{doc.wordCount} words •{" "}
+												{doc.readingTime} min read
+											</span>
+										</div>
+										<button
+											onClick={() => {
+												const updatedDocuments =
+													chatDocuments.filter(
+														(d) => d.id !== doc.id
+													);
+												setChatDocuments(
+													updatedDocuments
+												);
+
+												// Save to current session
+												const updatedSessions =
+													chatSessions.map(
+														(session) => {
+															if (
+																session.id ===
+																currentSessionId
+															) {
+																return {
+																	...session,
+																	documents:
+																		updatedDocuments,
+																};
+															}
+															return session;
+														}
+													);
+												saveChatSessions(
+													updatedSessions
+												);
+											}}
+											className="removeDocBtn"
+											title="Remove document">
+											<Trash2 size={14} />
+										</button>
+									</div>
+								))}
+							</div>
+						</div>
+					)}
 
 					<div className="chatCard">
 						<div className="chatMessages">
@@ -393,6 +607,13 @@ const ChatbotPage = ({
 
 						<div className="chatInput">
 							<div className="chatInputContainer">
+								<button
+									onClick={openDocumentSelector}
+									className="chatUploadButton"
+									title="Add document from OCR history"
+									disabled={!currentSession}>
+									<Plus size={20} />
+								</button>
 								<input
 									type="text"
 									value={inputMessage}
@@ -422,6 +643,490 @@ const ChatbotPage = ({
 					</div>
 				</div>
 			</div>
+
+			{/* Old modals removed - now placed after chatLayoutGrid closes */}
+			{false && (
+				<div className="modalOverlay" onClick={closeTestModal}>
+					<div
+						className="testModalContent"
+						onClick={(e) => e.stopPropagation()}>
+						<div className="modalHeader">
+							<div className="modalTitle">
+								<Award size={24} color="#3b82f6" />
+								<h2>{selectedTest.documentName}</h2>
+							</div>
+							<button
+								onClick={closeTestModal}
+								className="modalCloseBtn">
+								<X size={24} />
+							</button>
+						</div>
+
+						<div className="modalBody">
+							{/* Test Summary */}
+							<div className="testSummary">
+								<div className="summaryCard">
+									<div className="summaryLabel">Score</div>
+									<div
+										className={`summaryValue ${
+											selectedTest.score >= 70
+												? "scoreHigh"
+												: selectedTest.score >= 50
+												? "scoreMedium"
+												: "scoreLow"
+										}`}>
+										{selectedTest.score}%
+									</div>
+								</div>
+								<div className="summaryCard">
+									<div className="summaryLabel">
+										Correct Answers
+									</div>
+									<div className="summaryValue">
+										{selectedTest.correctAnswers} /{" "}
+										{selectedTest.totalQuestions}
+									</div>
+								</div>
+								<div className="summaryCard">
+									<div className="summaryLabel">Date</div>
+									<div className="summaryValue summaryDate">
+										{new Date(
+											selectedTest.timestamp
+										).toLocaleDateString()}
+									</div>
+								</div>
+							</div>
+
+							{/* Detailed Answers */}
+							{selectedTest.detailedAnswers && (
+								<div className="detailedAnswers">
+									<h3 className="detailedTitle">
+										Question Review
+									</h3>
+									{selectedTest.detailedAnswers.map(
+										(qa, index) => (
+											<div
+												key={index}
+												className={`questionCard ${
+													qa.isCorrect
+														? "correctCard"
+														: "incorrectCard"
+												}`}>
+												<div className="questionHeader">
+													<span className="questionNumber">
+														Q{index + 1}
+													</span>
+													{qa.isCorrect ? (
+														<CheckCircle
+															size={20}
+															color="#10b981"
+														/>
+													) : (
+														<XCircle
+															size={20}
+															color="#ef4444"
+														/>
+													)}
+												</div>
+												<p className="questionText">
+													{qa.question}
+												</p>
+
+												<div className="answerOptions">
+													{qa.options.map(
+														(option, optIdx) => {
+															const isUserAnswer =
+																option ===
+																qa.userAnswer;
+															const isCorrectAnswer =
+																option ===
+																qa.correctAnswer;
+
+															return (
+																<div
+																	key={optIdx}
+																	className={`answerOption ${
+																		isCorrectAnswer
+																			? "correctOption"
+																			: ""
+																	} ${
+																		isUserAnswer &&
+																		!isCorrectAnswer
+																			? "incorrectOption"
+																			: ""
+																	}`}>
+																	{option}
+																	{isCorrectAnswer && (
+																		<span className="optionBadge correctBadge">
+																			✓
+																			Correct
+																		</span>
+																	)}
+																	{isUserAnswer &&
+																		!isCorrectAnswer && (
+																			<span className="optionBadge incorrectBadge">
+																				✗
+																				Your
+																				Answer
+																			</span>
+																		)}
+																</div>
+															);
+														}
+													)}
+												</div>
+											</div>
+										)
+									)}
+								</div>
+							)}
+
+							{!selectedTest.detailedAnswers && (
+								<div className="noDetailsMessage">
+									<p>
+										Detailed answers not available for this
+										test.
+									</p>
+									<p className="noDetailsHint">
+										This feature is available for tests
+										taken after this update.
+									</p>
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* Document Selector Modal */}
+			{showDocumentSelector && (
+				<div className="modalOverlay" onClick={closeDocumentSelector}>
+					<div
+						className="documentSelectorModal"
+						onClick={(e) => e.stopPropagation()}>
+						<div className="modalHeader">
+							<h2>Select Document from OCR History</h2>
+							<button
+								onClick={closeDocumentSelector}
+								className="modalCloseBtn">
+								<X size={24} />
+							</button>
+						</div>
+
+						<div className="modalBody">
+							{ocrHistory.length === 0 ? (
+								<div className="noDocumentsMessage">
+									<p>No documents found in OCR history.</p>
+									<p className="noDocumentsHint">
+										Upload and process a document in the OCR
+										page first.
+									</p>
+								</div>
+							) : (
+								<div className="documentGrid">
+									{ocrHistory.map((document, index) => {
+										const isAdded = chatDocuments.some(
+											(doc) =>
+												doc.id === document.filename
+										);
+
+										return (
+											<div
+												key={document.filename || index}
+												className={`documentCard ${
+													isAdded
+														? "documentAdded"
+														: ""
+												}`}
+												onClick={() =>
+													!isAdded &&
+													handleDocumentSelect(
+														document
+													)
+												}>
+												<div className="documentIcon">
+													📄
+												</div>
+												<div className="documentInfo">
+													<h3 className="documentTitle">
+														{document.originalName ||
+															"Untitled Document"}
+													</h3>
+													<p className="documentDate">
+														{new Date(
+															document.created
+														).toLocaleDateString(
+															"en-US",
+															{
+																month: "short",
+																day: "numeric",
+																year: "numeric",
+															}
+														)}
+													</p>
+													<p className="documentPreview">
+														{document.extractedText}
+													</p>
+												</div>
+												{isAdded && (
+													<div className="addedBadge">
+														<CheckCircle
+															size={20}
+														/>
+														<span>Added</span>
+													</div>
+												)}
+											</div>
+										);
+									})}
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* Test Detail Modal */}
+			{showTestModal && selectedTest && (
+				<div className="modalOverlay" onClick={closeTestModal}>
+					<div
+						className="testModalContent"
+						onClick={(e) => e.stopPropagation()}>
+						<div className="modalHeader">
+							<div className="modalTitle">
+								<Award size={24} color="#3b82f6" />
+								<h2>{selectedTest.documentName}</h2>
+							</div>
+							<button
+								onClick={closeTestModal}
+								className="modalCloseBtn">
+								<X size={24} />
+							</button>
+						</div>
+
+						<div className="modalBody">
+							{/* Test Summary */}
+							<div className="testSummary">
+								<div className="summaryCard">
+									<div className="summaryLabel">Score</div>
+									<div
+										className={`summaryValue ${
+											selectedTest.score >= 70
+												? "scoreHigh"
+												: selectedTest.score >= 50
+												? "scoreMedium"
+												: "scoreLow"
+										}`}>
+										{selectedTest.score}%
+									</div>
+								</div>
+								<div className="summaryCard">
+									<div className="summaryLabel">
+										Correct Answers
+									</div>
+									<div className="summaryValue">
+										{selectedTest.correctAnswers} /{" "}
+										{selectedTest.totalQuestions}
+									</div>
+								</div>
+								<div className="summaryCard">
+									<div className="summaryLabel">Date</div>
+									<div className="summaryValue summaryDate">
+										{new Date(
+											selectedTest.timestamp
+										).toLocaleDateString()}
+									</div>
+								</div>
+							</div>
+
+							{/* Detailed Answers */}
+							{selectedTest.detailedAnswers && (
+								<div className="detailedAnswers">
+									<h3 className="detailedTitle">
+										Question Review
+									</h3>
+									{selectedTest.detailedAnswers.map(
+										(qa, index) => (
+											<div
+												key={index}
+												className={`questionCard ${
+													qa.isCorrect
+														? "correctCard"
+														: "incorrectCard"
+												}`}>
+												<div className="questionHeader">
+													<span className="questionNumber">
+														Q{index + 1}
+													</span>
+													{qa.isCorrect ? (
+														<CheckCircle
+															size={20}
+															color="#10b981"
+														/>
+													) : (
+														<XCircle
+															size={20}
+															color="#ef4444"
+														/>
+													)}
+												</div>
+												<p className="questionText">
+													{qa.question}
+												</p>
+
+												<div className="answerOptions">
+													{qa.options.map(
+														(option, optIdx) => {
+															const isUserAnswer =
+																option ===
+																qa.userAnswer;
+															const isCorrectAnswer =
+																option ===
+																qa.correctAnswer;
+
+															return (
+																<div
+																	key={optIdx}
+																	className={`answerOption ${
+																		isCorrectAnswer
+																			? "correctOption"
+																			: ""
+																	} ${
+																		isUserAnswer &&
+																		!isCorrectAnswer
+																			? "incorrectOption"
+																			: ""
+																	}`}>
+																	{option}
+																	{isCorrectAnswer && (
+																		<span className="optionBadge correctBadge">
+																			✓
+																			Correct
+																		</span>
+																	)}
+																	{isUserAnswer &&
+																		!isCorrectAnswer && (
+																			<span className="optionBadge incorrectBadge">
+																				✗
+																				Your
+																				Answer
+																			</span>
+																		)}
+																</div>
+															);
+														}
+													)}
+												</div>
+											</div>
+										)
+									)}
+								</div>
+							)}
+
+							{!selectedTest.detailedAnswers && (
+								<div className="noDetailsMessage">
+									<p>
+										Detailed answers not available for this
+										test.
+									</p>
+									<p className="noDetailsHint">
+										This feature is available for tests
+										taken after this update.
+									</p>
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* Document Selector Modal */}
+			{showDocumentSelector && (
+				<div className="modalOverlay" onClick={closeDocumentSelector}>
+					<div
+						className="documentSelectorModal"
+						onClick={(e) => e.stopPropagation()}>
+						<div className="modalHeader">
+							<h2>Select Document from OCR History</h2>
+							<button
+								onClick={closeDocumentSelector}
+								className="modalCloseBtn">
+								<X size={24} />
+							</button>
+						</div>
+
+						<div className="modalBody">
+							{ocrHistory.length === 0 ? (
+								<div className="noDocumentsMessage">
+									<p>No documents found in OCR history.</p>
+									<p className="noDocumentsHint">
+										Upload and process a document in the OCR
+										page first.
+									</p>
+								</div>
+							) : (
+								<div className="documentGrid">
+									{ocrHistory.map((document, index) => {
+										const isAdded = chatDocuments.some(
+											(doc) =>
+												doc.id === document.filename
+										);
+
+										return (
+											<div
+												key={document.filename || index}
+												className={`documentCard ${
+													isAdded
+														? "documentAdded"
+														: ""
+												}`}
+												onClick={() =>
+													!isAdded &&
+													handleDocumentSelect(
+														document
+													)
+												}>
+												<div className="documentIcon">
+													📄
+												</div>
+												<div className="documentInfo">
+													<h3 className="documentTitle">
+														{document.originalName ||
+															"Untitled Document"}
+													</h3>
+													<p className="documentDate">
+														{new Date(
+															document.created
+														).toLocaleDateString(
+															"en-US",
+															{
+																month: "short",
+																day: "numeric",
+																year: "numeric",
+															}
+														)}
+													</p>
+													<p className="documentPreview">
+														{document.extractedText}
+													</p>
+												</div>
+												{isAdded && (
+													<div className="addedBadge">
+														<CheckCircle
+															size={20}
+														/>
+														<span>Added</span>
+													</div>
+												)}
+											</div>
+										);
+									})}
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };

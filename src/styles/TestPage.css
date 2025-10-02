@@ -5,6 +5,8 @@
 	margin: 0 auto;
 	height: calc(100vh - 70px);
 	overflow-y: auto;
+	background-color: var(--bg-secondary);
+	transition: background-color 0.3s ease;
 }
 
 .testHeader {
@@ -21,12 +23,12 @@
 .headerTitle h1 {
 	font-size: 2rem;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin: 0;
 }
 
 .testSubtitle {
-	color: #64748b;
+	color: var(--text-secondary);
 	font-size: 1.125rem;
 	margin: 0;
 }
@@ -40,19 +42,21 @@
 }
 
 .statCard {
-	background-color: white;
+	background-color: var(--bg-primary);
 	border-radius: 12px;
 	padding: 1.5rem;
 	display: flex;
 	align-items: center;
 	gap: 1rem;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
-	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	box-shadow: var(--shadow-sm);
+	transition: transform 0.2s ease, box-shadow 0.2s ease,
+		background-color 0.3s ease;
+	border: 1px solid var(--border-color);
 }
 
 .statCard:hover {
 	transform: translateY(-2px);
-	box-shadow: 0 8px 12px rgba(0, 0, 0, 0.08);
+	box-shadow: var(--shadow-md);
 }
 
 .statIcon {
@@ -91,13 +95,13 @@
 .statNumber {
 	font-size: 2rem;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin: 0;
 }
 
 .statLabel {
 	font-size: 0.875rem;
-	color: #64748b;
+	color: var(--text-secondary);
 	margin: 0;
 }
 
@@ -109,10 +113,12 @@
 }
 
 .testSection {
-	background-color: white;
+	background-color: var(--bg-primary);
 	border-radius: 12px;
 	padding: 1.75rem;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+	box-shadow: var(--shadow-sm);
+	border: 1px solid var(--border-color);
+	transition: background-color 0.3s ease;
 }
 
 .sectionTitle {
@@ -121,10 +127,10 @@
 	gap: 0.5rem;
 	font-size: 1.25rem;
 	font-weight: 600;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin-bottom: 1.5rem;
 	padding-bottom: 0.75rem;
-	border-bottom: 2px solid #f1f5f9;
+	border-bottom: 2px solid var(--border-color);
 }
 
 /* Loading and Empty States */
@@ -135,18 +141,18 @@
 	align-items: center;
 	justify-content: center;
 	padding: 3rem;
-	color: #94a3b8;
+	color: var(--text-tertiary);
 }
 
 .emptyState p {
 	margin: 0.5rem 0 0 0;
 	font-size: 1rem;
-	color: #64748b;
+	color: var(--text-secondary);
 }
 
 .emptySubtext {
 	font-size: 0.875rem !important;
-	color: #94a3b8 !important;
+	color: var(--text-tertiary) !important;
 }
 
 /* Documents Grid */
@@ -157,8 +163,8 @@
 }
 
 .documentCard {
-	background-color: #f8fafc;
-	border: 2px solid #e2e8f0;
+	background-color: var(--bg-secondary);
+	border: 2px solid var(--border-color);
 	border-radius: 10px;
 	padding: 1.25rem;
 	cursor: pointer;
@@ -173,7 +179,7 @@
 
 .documentCardCompleted {
 	border-color: #10b981;
-	background-color: #f0fdf4;
+	background-color: var(--bg-tertiary);
 }
 
 .documentCardCompleted:hover {
@@ -207,14 +213,14 @@
 .documentTitle {
 	font-size: 1rem;
 	font-weight: 600;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin: 0 0 0.5rem 0;
 	line-height: 1.4;
 }
 
 .documentMeta {
 	font-size: 0.75rem;
-	color: #94a3b8;
+	color: var(--text-tertiary);
 	margin: 0;
 }
 
@@ -224,7 +230,7 @@
 	gap: 0.5rem;
 	margin-top: 0.75rem;
 	padding-top: 0.75rem;
-	border-top: 1px solid #e2e8f0;
+	border-top: 1px solid var(--border-color);
 	color: #10b981;
 	font-weight: 600;
 	font-size: 0.875rem;
@@ -264,12 +270,14 @@
 
 /* History Section */
 .historySection {
-	background-color: white;
+	background-color: var(--bg-primary);
 	border-radius: 12px;
 	padding: 1.75rem;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+	box-shadow: var(--shadow-sm);
 	max-height: calc(100vh - 300px);
 	overflow-y: auto;
+	border: 1px solid var(--border-color);
+	transition: background-color 0.3s ease;
 }
 
 .emptyHistory {
@@ -277,7 +285,7 @@
 	flex-direction: column;
 	align-items: center;
 	padding: 2rem;
-	color: #94a3b8;
+	color: var(--text-tertiary);
 }
 
 .emptyHistory p {
@@ -296,13 +304,14 @@
 	align-items: center;
 	gap: 1rem;
 	padding: 1rem;
-	background-color: #f8fafc;
+	background-color: var(--bg-secondary);
 	border-radius: 8px;
 	transition: background-color 0.2s ease;
+	cursor: pointer;
 }
 
 .historyItem:hover {
-	background-color: #f1f5f9;
+	background-color: var(--bg-tertiary);
 }
 
 .historyIcon {
@@ -312,7 +321,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background-color: white;
+	background-color: var(--bg-primary);
+	border: 1px solid var(--border-color);
 }
 
 .historyContent {
@@ -321,14 +331,14 @@
 
 .historyTitle {
 	font-weight: 600;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin-bottom: 0.25rem;
 	font-size: 0.875rem;
 }
 
 .historyMeta {
 	font-size: 0.75rem;
-	color: #94a3b8;
+	color: var(--text-tertiary);
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
