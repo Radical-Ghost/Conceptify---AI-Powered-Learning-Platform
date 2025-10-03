@@ -316,15 +316,14 @@ const ChatbotPage = ({
 								</button>
 								{chatSessions.length > 0 && (
 									<button
-										onClick={deleteAllChats}
-										className="deleteAllChatsBtn"
-										title="Delete All Chats">
-										<Trash2 size={18} />
+									onClick={deleteAllChats}
+									className="deleteAllChatsBtn"
+									title="Delete All Chats">
+									<Trash2 size={18} />
 									</button>
 								)}
 							</div>
 						</div>
-
 						<div className="sessionsList">
 							{chatSessions.length === 0 ? (
 								<div className="emptySessions">
@@ -333,6 +332,7 @@ const ChatbotPage = ({
 									<button
 										onClick={createNewChat}
 										className="createFirstChat">
+										<Plus size={16} />
 										Create First Chat
 									</button>
 								</div>
@@ -643,248 +643,6 @@ const ChatbotPage = ({
 					</div>
 				</div>
 			</div>
-
-			{/* Old modals removed - now placed after chatLayoutGrid closes */}
-			{false && (
-				<div className="modalOverlay" onClick={closeTestModal}>
-					<div
-						className="testModalContent"
-						onClick={(e) => e.stopPropagation()}>
-						<div className="modalHeader">
-							<div className="modalTitle">
-								<Award size={24} color="#3b82f6" />
-								<h2>{selectedTest.documentName}</h2>
-							</div>
-							<button
-								onClick={closeTestModal}
-								className="modalCloseBtn">
-								<X size={24} />
-							</button>
-						</div>
-
-						<div className="modalBody">
-							{/* Test Summary */}
-							<div className="testSummary">
-								<div className="summaryCard">
-									<div className="summaryLabel">Score</div>
-									<div
-										className={`summaryValue ${
-											selectedTest.score >= 70
-												? "scoreHigh"
-												: selectedTest.score >= 50
-												? "scoreMedium"
-												: "scoreLow"
-										}`}>
-										{selectedTest.score}%
-									</div>
-								</div>
-								<div className="summaryCard">
-									<div className="summaryLabel">
-										Correct Answers
-									</div>
-									<div className="summaryValue">
-										{selectedTest.correctAnswers} /{" "}
-										{selectedTest.totalQuestions}
-									</div>
-								</div>
-								<div className="summaryCard">
-									<div className="summaryLabel">Date</div>
-									<div className="summaryValue summaryDate">
-										{new Date(
-											selectedTest.timestamp
-										).toLocaleDateString()}
-									</div>
-								</div>
-							</div>
-
-							{/* Detailed Answers */}
-							{selectedTest.detailedAnswers && (
-								<div className="detailedAnswers">
-									<h3 className="detailedTitle">
-										Question Review
-									</h3>
-									{selectedTest.detailedAnswers.map(
-										(qa, index) => (
-											<div
-												key={index}
-												className={`questionCard ${
-													qa.isCorrect
-														? "correctCard"
-														: "incorrectCard"
-												}`}>
-												<div className="questionHeader">
-													<span className="questionNumber">
-														Q{index + 1}
-													</span>
-													{qa.isCorrect ? (
-														<CheckCircle
-															size={20}
-															color="#10b981"
-														/>
-													) : (
-														<XCircle
-															size={20}
-															color="#ef4444"
-														/>
-													)}
-												</div>
-												<p className="questionText">
-													{qa.question}
-												</p>
-
-												<div className="answerOptions">
-													{qa.options.map(
-														(option, optIdx) => {
-															const isUserAnswer =
-																option ===
-																qa.userAnswer;
-															const isCorrectAnswer =
-																option ===
-																qa.correctAnswer;
-
-															return (
-																<div
-																	key={optIdx}
-																	className={`answerOption ${
-																		isCorrectAnswer
-																			? "correctOption"
-																			: ""
-																	} ${
-																		isUserAnswer &&
-																		!isCorrectAnswer
-																			? "incorrectOption"
-																			: ""
-																	}`}>
-																	{option}
-																	{isCorrectAnswer && (
-																		<span className="optionBadge correctBadge">
-																			✓
-																			Correct
-																		</span>
-																	)}
-																	{isUserAnswer &&
-																		!isCorrectAnswer && (
-																			<span className="optionBadge incorrectBadge">
-																				✗
-																				Your
-																				Answer
-																			</span>
-																		)}
-																</div>
-															);
-														}
-													)}
-												</div>
-											</div>
-										)
-									)}
-								</div>
-							)}
-
-							{!selectedTest.detailedAnswers && (
-								<div className="noDetailsMessage">
-									<p>
-										Detailed answers not available for this
-										test.
-									</p>
-									<p className="noDetailsHint">
-										This feature is available for tests
-										taken after this update.
-									</p>
-								</div>
-							)}
-						</div>
-					</div>
-				</div>
-			)}
-
-			{/* Document Selector Modal */}
-			{showDocumentSelector && (
-				<div className="modalOverlay" onClick={closeDocumentSelector}>
-					<div
-						className="documentSelectorModal"
-						onClick={(e) => e.stopPropagation()}>
-						<div className="modalHeader">
-							<h2>Select Document from OCR History</h2>
-							<button
-								onClick={closeDocumentSelector}
-								className="modalCloseBtn">
-								<X size={24} />
-							</button>
-						</div>
-
-						<div className="modalBody">
-							{ocrHistory.length === 0 ? (
-								<div className="noDocumentsMessage">
-									<p>No documents found in OCR history.</p>
-									<p className="noDocumentsHint">
-										Upload and process a document in the OCR
-										page first.
-									</p>
-								</div>
-							) : (
-								<div className="documentGrid">
-									{ocrHistory.map((document, index) => {
-										const isAdded = chatDocuments.some(
-											(doc) =>
-												doc.id === document.filename
-										);
-
-										return (
-											<div
-												key={document.filename || index}
-												className={`documentCard ${
-													isAdded
-														? "documentAdded"
-														: ""
-												}`}
-												onClick={() =>
-													!isAdded &&
-													handleDocumentSelect(
-														document
-													)
-												}>
-												<div className="documentIcon">
-													📄
-												</div>
-												<div className="documentInfo">
-													<h3 className="documentTitle">
-														{document.originalName ||
-															"Untitled Document"}
-													</h3>
-													<p className="documentDate">
-														{new Date(
-															document.created
-														).toLocaleDateString(
-															"en-US",
-															{
-																month: "short",
-																day: "numeric",
-																year: "numeric",
-															}
-														)}
-													</p>
-													<p className="documentPreview">
-														{document.extractedText}
-													</p>
-												</div>
-												{isAdded && (
-													<div className="addedBadge">
-														<CheckCircle
-															size={20}
-														/>
-														<span>Added</span>
-													</div>
-												)}
-											</div>
-										);
-									})}
-								</div>
-							)}
-						</div>
-					</div>
-				</div>
-			)}
 
 			{/* Test Detail Modal */}
 			{showTestModal && selectedTest && (

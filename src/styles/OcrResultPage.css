@@ -6,6 +6,10 @@
 	overflow-y: auto;
 }
 
+.ocrResultContent::-webkit-scrollbar {
+	display: none; /* Chrome, Safari and Opera */
+}
+
 .ocrResultHeader {
 	margin-bottom: 2rem;
 }

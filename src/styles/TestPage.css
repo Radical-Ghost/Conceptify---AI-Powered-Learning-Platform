@@ -7,6 +7,8 @@
 	overflow-y: auto;
 	background-color: var(--bg-secondary);
 	transition: background-color 0.3s ease;
+	min-height: 100%;
+	padding-top: 7%;
 }
 
 .testHeader {
@@ -413,4 +415,29 @@
 	.documentsGrid {
 		grid-template-columns: 1fr;
 	}
+}
+/* Remove scrollbar only from TestPage specific elements */
+.testPageContent {
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
+}
+
+.testPageContent::-webkit-scrollbar {
+	display: none; /* Chrome, Safari and Opera */
+}
+
+.documentsGrid,
+.historyList {
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
+}
+.documentsGrid,
+.historySection {
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
+}
+
+.documentsGrid::-webkit-scrollbar,
+.historyList::-webkit-scrollbar {
+	display: none; /* Chrome, Safari and Opera */
 }

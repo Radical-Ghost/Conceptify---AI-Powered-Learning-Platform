@@ -63,7 +63,7 @@ const Dashboard = ({ user, handleLogout, chatMessages }) => {
 						<MessageSquare size={24} color="#3b82f6" />
 					</div>
 					<div className="statInfo">
-						<span className="statNumber">{recentChats.length}</span>
+						<span className="statNumber" style={{ marginLeft: "33%" }}> {recentChats.length}</span>
 						<span className="statLabel">Total Chats</span>
 					</div>
 				</div>
@@ -74,7 +74,7 @@ const Dashboard = ({ user, handleLogout, chatMessages }) => {
 						<Clock size={24} color="#10b981" />
 					</div>
 					<div className="statInfo">
-						<span className="statNumber">
+						<span className="statNumber" style={{ marginLeft: "33%" }}>
 							{recentChats.reduce(
 								(total, chat) => total + chat.messageCount,
 								0

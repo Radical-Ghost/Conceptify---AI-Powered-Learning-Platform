@@ -3,7 +3,8 @@
 	max-width: 1200px;
 	margin: 0 auto;
 	background-color: var(--bg-secondary);
-	min-height: 100vh;
+	min-height: 100%;
+	padding-top: 8.5%;
 }
 
 .dashboardHeader {
@@ -55,6 +56,7 @@
 }
 
 .statNumber {
+	margin-left: 33%;
 	font-size: 2rem;
 	font-weight: 700;
 	color: var(--text-primary);

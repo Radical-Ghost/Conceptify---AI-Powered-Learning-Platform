@@ -4,37 +4,50 @@
 	height: calc(100vh - 70px);
 	display: flex;
 	flex-direction: column;
-	background-color: #f8fafc;
+	background-color: var(--bg-secondary);
+	transition: background-color 0.3s ease;
+	overflow: hidden; /* Prevent any scrolling */
+	min-height: 100vh;
+}
+
+/* Hide the question container when results are shown */
+.takeTestContent:has(.resultsContainer) .testTopBar,
+.takeTestContent:has(.resultsContainer) .progressBar,
+.takeTestContent:has(.resultsContainer) .questionContainer {
+	display: none;
 }
 
 /* Top Bar */
 .testTopBar {
-	background-color: white;
+	background-color: var(--bg-primary);
 	padding: 1.25rem 2rem;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+	box-shadow: var(--shadow-sm);
 	gap: 1.5rem;
+	transition: all 0.3s ease;
+	padding-top: 85px;
 }
 
 .backButton {
 	display: flex;
+	margin-bottom: -0.5rem;
 	align-items: center;
 	gap: 0.5rem;
 	padding: 0.5rem 1rem;
-	background-color: #f1f5f9;
+	background-color: var(--bg-tertiary);
 	border: none;
 	border-radius: 8px;
 	cursor: pointer;
 	font-weight: 500;
-	color: #64748b;
+	color: var(--text-tertiary);
 	transition: all 0.2s ease;
 }
 
 .backButton:hover {
-	background-color: #e2e8f0;
-	color: #1e293b;
+	background-color: var(--border-color);
+	color: var(--text-primary);
 }
 
 .testInfo {
@@ -44,8 +57,9 @@
 .testInfo h2 {
 	font-size: 1.25rem;
 	font-weight: 600;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin: 0 0 0.25rem 0;
+	transition: color 0.3s ease;
 }
 
 .testMeta {
@@ -53,20 +67,23 @@
 	align-items: center;
 	gap: 0.5rem;
 	font-size: 0.875rem;
-	color: #64748b;
+	color: var(--text-tertiary);
+	transition: color 0.3s ease;
 }
 
 .testProgress {
 	font-size: 0.875rem;
-	color: #64748b;
+	color: var(--text-tertiary);
 	font-weight: 500;
+	transition: color 0.3s ease;
 }
 
 /* Progress Bar */
 .progressBar {
 	height: 4px;
-	background-color: #e2e8f0;
+	background-color: var(--border-color);
 	position: relative;
+	transition: background-color 0.3s ease;
 }
 
 .progressFill {
@@ -87,14 +104,22 @@
 	max-width: 900px;
 	margin: 0 auto;
 	width: 100%;
+	/* Hide scrollbar but keep functionality */
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
+}
+
+.questionContainer::-webkit-scrollbar {
+	display: none; /* Chrome, Safari and Opera */
 }
 
 .questionCard {
-	background-color: white;
+	background-color: var(--bg-primary);
 	border-radius: 12px;
 	padding: 2rem;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+	box-shadow: var(--shadow-md);
 	width: 100%;
+	transition: all 0.3s ease;
 }
 
 .questionHeader {
@@ -104,8 +129,8 @@
 .questionNumber {
 	display: inline-block;
 	padding: 0.5rem 1rem;
-	background-color: #dbeafe;
-	color: #2563eb;
+	background-color: rgba(59, 130, 246, 0.1);
+	color: #3b82f6;
 	border-radius: 999px;
 	font-size: 0.875rem;
 	font-weight: 600;
@@ -114,9 +139,10 @@
 .questionText {
 	font-size: 1.25rem;
 	font-weight: 600;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin: 1.5rem 0;
 	line-height: 1.6;
+	transition: color 0.3s ease;
 }
 
 /* Options */
@@ -125,15 +151,16 @@
 	flex-direction: column;
 	gap: 1rem;
 	margin-top: 1.5rem;
+	/* Ensure no scrollbar */
+	overflow: visible;
 }
-
 .optionCard {
 	display: flex;
 	align-items: center;
 	gap: 1rem;
 	padding: 1.25rem;
-	background-color: #f8fafc;
-	border: 2px solid #e2e8f0;
+	background-color: var(--bg-secondary);
+	border: 2px solid var(--border-color);
 	border-radius: 10px;
 	cursor: pointer;
 	transition: all 0.2s ease;
@@ -141,16 +168,16 @@
 
 .optionCard:hover {
 	border-color: #3b82f6;
-	background-color: #eff6ff;
+	background-color: rgba(59, 130, 246, 0.05);
 }
 
 .optionSelected {
 	border-color: #3b82f6;
-	background-color: #dbeafe;
+	background-color: rgba(59, 130, 246, 0.1);
 }
 
 .optionRadio {
-	color: #94a3b8;
+	color: var(--text-tertiary);
 	transition: color 0.2s ease;
 }
 
@@ -161,8 +188,9 @@
 .optionText {
 	flex: 1;
 	font-size: 1rem;
-	color: #1e293b;
+	color: var(--text-primary);
 	font-weight: 500;
+	transition: color 0.3s ease;
 }
 
 /* Navigation */
@@ -184,13 +212,13 @@
 }
 
 .navButtonSecondary {
-	background-color: #f1f5f9;
-	color: #64748b;
+	background-color: var(--bg-tertiary);
+	color: var(--text-tertiary);
 }
 
 .navButtonSecondary:hover:not(:disabled) {
-	background-color: #e2e8f0;
-	color: #1e293b;
+	background-color: var(--border-color);
+	color: var(--text-primary);
 }
 
 .navButtonSecondary:disabled {
@@ -231,25 +259,25 @@
 	font-weight: 600;
 	font-size: 0.875rem;
 	cursor: pointer;
-	background-color: #f1f5f9;
-	color: #94a3b8;
+	background-color: var(--bg-tertiary);
+	color: var(--text-tertiary);
 	border: 2px solid transparent;
 	transition: all 0.2s ease;
 }
 
 .indicator:hover {
-	background-color: #e2e8f0;
-	color: #64748b;
+	background-color: var(--border-color);
+	color: var(--text-secondary);
 }
 
 .indicatorActive {
-	background-color: #dbeafe;
-	color: #2563eb;
+	background-color: rgba(59, 130, 246, 0.1);
+	color: #3b82f6;
 	border-color: #3b82f6;
 }
 
 .indicatorAnswered {
-	background-color: #dcfce7;
+	background-color: rgba(16, 185, 129, 0.1);
 	color: #10b981;
 }
 
@@ -261,7 +289,16 @@
 	align-items: center;
 	justify-content: center;
 	padding: 2rem;
-	background-color: white;
+	background-color: var(--bg-primary);
+	transition: background-color 0.3s ease;
+	/* Hide scrollbar but keep functionality */
+	overflow: hidden; /* Disable scrolling */
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.resultsContainer::-webkit-scrollbar {
+	display: none;
 }
 
 .resultsHeader {
@@ -272,14 +309,16 @@
 .resultsHeader h1 {
 	font-size: 2rem;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-primary);
 	margin: 1rem 0 0.5rem 0;
+	transition: color 0.3s ease;
 }
 
 .resultsDocument {
 	font-size: 1rem;
-	color: #64748b;
+	color: var(--text-secondary);
 	margin: 0;
+	transition: color 0.3s ease;
 }
 
 .resultsScore {
@@ -312,7 +351,8 @@
 .scoreNumber {
 	font-size: 3rem;
 	font-weight: 800;
-	color: #1e293b;
+	color: var(--text-primary);
+	transition: color 0.3s ease;
 }
 
 .resultsStats {
@@ -326,19 +366,22 @@
 	align-items: center;
 	gap: 1rem;
 	padding: 1.25rem 1.5rem;
-	background-color: #f8fafc;
+	background-color: var(--bg-secondary);
 	border-radius: 10px;
+	transition: background-color 0.3s ease;
 }
 
 .statValue {
 	font-size: 1.5rem;
 	font-weight: 700;
-	color: #1e293b;
+	color: var(--text-primary);
+	transition: color 0.3s ease;
 }
 
 .statLabel {
 	font-size: 0.875rem;
-	color: #64748b;
+	color: var(--text-tertiary);
+	transition: color 0.3s ease;
 }
 
 .resultsActions {

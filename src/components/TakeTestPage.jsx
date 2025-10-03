@@ -256,7 +256,7 @@ const TakeTestPage = ({ activeTest }) => {
 		<div className="takeTestContent">
 			{/* Test Header */}
 			<div className="testTopBar">
-				<button onClick={handleReturnToTests} className="backButton">
+				<button onClick={handleReturnToTests} className="backButton" style={{ marginBottom: "-0.5rem" }}>
 					<ArrowLeft size={20} />
 					Back
 				</button>
