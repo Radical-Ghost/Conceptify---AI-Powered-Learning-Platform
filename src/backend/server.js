@@ -10,6 +10,16 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Path to Python with GPU support (in .venv)
+const PYTHON_PATH = path.join(
+	__dirname,
+	"..",
+	"..",
+	".venv",
+	"Scripts",
+	"python.exe"
+);
+
 const app = express();
 const PORT = 5001;
 
@@ -79,11 +89,23 @@ app.get("/api/ocr/results", (req, res) => {
 				const filePath = path.join(dataDir, file);
 				const stats = fs.statSync(filePath);
 
+				// Skip empty or corrupted files
+				if (stats.size === 0) {
+					console.warn(`⚠️  Skipping empty file: ${file}`);
+					return null;
+				}
+
 				// Read the file content to get metadata
 				try {
-					const content = JSON.parse(
-						fs.readFileSync(filePath, "utf8")
-					);
+					const fileContent = fs.readFileSync(filePath, "utf8").trim();
+					
+					// Skip if file is empty or just whitespace
+					if (!fileContent) {
+						console.warn(`⚠️  Skipping empty content: ${file}`);
+						return null;
+					}
+					
+					const content = JSON.parse(fileContent);
 					return {
 						filename: file,
 						originalName:
@@ -98,18 +120,12 @@ app.get("/api/ocr/results", (req, res) => {
 							) + "..." || "No text available",
 					};
 				} catch (err) {
-					console.error("❌ Error reading OCR result file:", err);
-					return {
-						filename: file,
-						originalName: file
-							.replace("_", " ")
-							.replace(".json", ""),
-						created: stats.birthtime,
-						size: stats.size,
-						extractedText: "Error reading file",
-					};
+					console.error(`❌ Error reading OCR result file (${file}):`, err.message);
+					// Return null for corrupted files instead of error object
+					return null;
 				}
 			})
+			.filter(file => file !== null) // Remove null entries
 			.sort((a, b) => b.created - a.created); // Sort by newest first
 
 		res.json({ results: files, count: files.length });
@@ -122,6 +138,7 @@ app.get("/api/ocr/results", (req, res) => {
 // OCR processing endpoint
 app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 	console.log("📄 OCR processing request received");
+	console.log("🐍 Using Python:", PYTHON_PATH);
 
 	if (!req.file) {
 		console.error("❌ No file uploaded");
@@ -133,10 +150,10 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 	console.log(`📁 Processing file: ${originalFileName}`);
 	console.log(`💾 Saved to: ${filePath}`);
 
-	// Spawn Python process to handle OCR
+	// Spawn Python process to handle OCR (use .venv Python with GPU support)
 	const pythonProcess = spawn(
-		"uv",
-		["run", "python", "ocr_wrapper.py", filePath],
+		PYTHON_PATH,
+		[path.join(__dirname, "ocr_wrapper.py"), filePath],
 		{
 			cwd: __dirname,
 			stdio: ["pipe", "pipe", "pipe"],
@@ -156,6 +173,11 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 
 	pythonProcess.on("close", (code) => {
 		console.log(`🐍 Python process exited with code: ${code}`);
+
+		// Always log stderr (contains diagnostic messages)
+		if (pythonError.trim()) {
+			console.log("🔍 Python diagnostics:", pythonError);
+		}
 
 		if (code !== 0) {
 			console.error("❌ Python process error:", pythonError);
@@ -254,12 +276,15 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 			transformedResult.summaryDetails = summaryDetails;
 			transformedResult.summaryTime = summaryTime;
 
-			fs.writeFileSync(
-				resultFilePath,
-				JSON.stringify(transformedResult, null, 2)
-			);
+			// Validate result before saving
+			const resultContent = JSON.stringify(transformedResult, null, 2);
+			if (!resultContent || resultContent.length < 10) {
+				throw new Error("Result is empty or invalid");
+			}
+
+			fs.writeFileSync(resultFilePath, resultContent);
 			console.log(
-				`💾 OCR result automatically saved to: ${resultFileName}`
+				`💾 OCR result automatically saved to: ${resultFileName} (${(resultContent.length / 1024).toFixed(2)} KB)`
 			);
 
 			res.json(transformedResult);
@@ -375,8 +400,10 @@ app.put("/api/ocr/update/:filename", (req, res) => {
 // Start server
 app.listen(PORT, () => {
 	console.log(`🚀 Backend server running on http://localhost:${PORT}`);
-	console.log(`📄 OCR processing endpoint: POST /api/ocr/process`);
-	console.log(`� Get specific OCR result: GET /api/ocr/result/:filename`);
+	console.log(`� Python executable: ${PYTHON_PATH}`);
+	console.log(`✅ Python exists: ${fs.existsSync(PYTHON_PATH)}`);
+	console.log(`�📄 OCR processing endpoint: POST /api/ocr/process`);
+	console.log(`📄 Get specific OCR result: GET /api/ocr/result/:filename`);
 	console.log(`📝 Update OCR results: PUT /api/ocr/update/:filename`);
 	console.log(`📋 List OCR results: GET /api/ocr/results`);
 	console.log(`💚 Health check: GET /api/health`);

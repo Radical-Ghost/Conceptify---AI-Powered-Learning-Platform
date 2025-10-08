@@ -67,13 +67,26 @@ class OCRPipeline:
     def setup_summarizer(self):
         """Initialise BART-Large summarizer if dependencies are available"""
         try:
+            # Check GPU availability
             use_gpu = torch.cuda.is_available()
             device = 0 if use_gpu else -1
+            
+            # Print GPU info for debugging (to stderr to avoid corrupting JSON output)
+            if use_gpu:
+                print(f"🎮 GPU Detected: {torch.cuda.get_device_name(0)}", file=sys.stderr)
+                print(f"💾 GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.2f} GB", file=sys.stderr)
+                print(f"⚡ CUDA Version: {torch.version.cuda}", file=sys.stderr)
+            else:
+                print("⚠️  No GPU detected - using CPU (this will be slower)", file=sys.stderr)
+            
+            # Load model with explicit device placement
             self.summarizer = pipeline(
                 "summarization",
                 model="facebook/bart-large-cnn",
                 device=device,
+                torch_dtype=torch.float16 if use_gpu else torch.float32,  # Use FP16 on GPU for speed
             )
+            
             # Increased word limits for better coverage
             self.summarizer_max_words = 1200 if use_gpu else 600
             self.summarizer_max_chunks = 4 if use_gpu else 2
@@ -84,7 +97,11 @@ class OCRPipeline:
             self.summarizer_min_length = 120 if use_gpu else 80
             self.summarizer_allow_refine = use_gpu
             self.summarizer_strategy = "gpu" if use_gpu else "cpu"
-        except Exception:
+            
+            print(f"✅ BART model loaded on: {'GPU' if use_gpu else 'CPU'}", file=sys.stderr)
+            
+        except Exception as e:
+            print(f"❌ Error loading BART model: {e}", file=sys.stderr)
             self.summarizer = None
             self.summarizer_max_words = 0
             self.summarizer_max_chunks = 0
