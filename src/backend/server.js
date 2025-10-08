@@ -97,14 +97,16 @@ app.get("/api/ocr/results", (req, res) => {
 
 				// Read the file content to get metadata
 				try {
-					const fileContent = fs.readFileSync(filePath, "utf8").trim();
-					
+					const fileContent = fs
+						.readFileSync(filePath, "utf8")
+						.trim();
+
 					// Skip if file is empty or just whitespace
 					if (!fileContent) {
 						console.warn(`⚠️  Skipping empty content: ${file}`);
 						return null;
 					}
-					
+
 					const content = JSON.parse(fileContent);
 					return {
 						filename: file,
@@ -120,12 +122,15 @@ app.get("/api/ocr/results", (req, res) => {
 							) + "..." || "No text available",
 					};
 				} catch (err) {
-					console.error(`❌ Error reading OCR result file (${file}):`, err.message);
+					console.error(
+						`❌ Error reading OCR result file (${file}):`,
+						err.message
+					);
 					// Return null for corrupted files instead of error object
 					return null;
 				}
 			})
-			.filter(file => file !== null) // Remove null entries
+			.filter((file) => file !== null) // Remove null entries
 			.sort((a, b) => b.created - a.created); // Sort by newest first
 
 		res.json({ results: files, count: files.length });
@@ -284,7 +289,9 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 
 			fs.writeFileSync(resultFilePath, resultContent);
 			console.log(
-				`💾 OCR result automatically saved to: ${resultFileName} (${(resultContent.length / 1024).toFixed(2)} KB)`
+				`💾 OCR result automatically saved to: ${resultFileName} (${(
+					resultContent.length / 1024
+				).toFixed(2)} KB)`
 			);
 
 			res.json(transformedResult);
