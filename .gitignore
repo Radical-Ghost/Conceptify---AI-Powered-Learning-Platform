@@ -57,3 +57,8 @@ src/backend/data
 #MICS
 .megaignore
 desktop.ini
+*.rar
+
+.python-version
+README_OLD.md
+README_OCR_BRIEF.md
