@@ -1,5 +1,5 @@
 .ocrResultContent {
-	padding: 2rem;
+	padding: 6.5rem 0 2rem 0;
 	max-width: 1400px;
 	margin: 0 auto;
 	height: calc(100vh - 70px);
@@ -11,7 +11,7 @@
 }
 
 .ocrResultHeader {
-	margin-bottom: 2rem;
+	margin-bottom: 1rem;
 }
 
 .headerTitle {
@@ -54,6 +54,7 @@
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(min(500px, 100%), 1fr));
 	gap: 2rem;
+	align-items: stretch;
 }
 
 .resultCard {
@@ -61,7 +62,7 @@
 	border-radius: 12px;
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
 	padding: 1.75rem;
-	height: fit-content;
+	margin-bottom: 1rem;
 }
 
 .resultTitle {
@@ -77,7 +78,6 @@
 	background-color: #f8fafc;
 	border-radius: 8px;
 	padding: 1.25rem;
-	max-height: 500px;
 	overflow-y: auto;
 	color: #475569;
 	line-height: 1.6;
@@ -196,7 +196,6 @@
 }
 
 .processingSummaryText {
-	margin-top: 1.5rem;
 	background-color: #f8fafc;
 	border-radius: 8px;
 	padding: 1.25rem;
@@ -323,7 +322,11 @@
 	padding: 1rem;
 	border: 1px solid #d1d5db;
 	border-radius: 6px;
-	font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+	font-family:
+		"Inter",
+		-apple-system,
+		BlinkMacSystemFont,
+		sans-serif;
 	font-size: 0.95rem;
 	line-height: 1.6;
 	color: #475569;
@@ -457,7 +460,7 @@
 	background-color: #f8fafc;
 	border-radius: 8px;
 	padding: 1.25rem;
-	max-height: 400px;
+	max-height: 629px;
 	overflow-y: auto;
 }
 

@@ -18,7 +18,7 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 	const navigate = useNavigate();
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedText, setEditedText] = useState(
-		ocrResult?.finalExtractedText || ocrResult?.extractedText || ""
+		ocrResult?.finalExtractedText || ocrResult?.extractedText || "",
 	);
 	const [selectedTab, setSelectedTab] = useState("final"); // 'original', 'enhanced', 'final'
 	const [saveMessage, setSaveMessage] = useState("");
@@ -37,7 +37,7 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 		const numericTime = Number(summaryTime);
 		if (!Number.isNaN(numericTime)) {
 			summaryMetaItems.push(
-				`Generated in ${numericTime.toFixed(numericTime >= 1 ? 1 : 2)}s`
+				`Generated in ${numericTime.toFixed(numericTime >= 1 ? 1 : 2)}s`,
 			);
 		}
 	}
@@ -61,7 +61,7 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 
 			if (!filename) {
 				setSaveMessage(
-					"Error: No saved filename found. Cannot update this result."
+					"Error: No saved filename found. Cannot update this result.",
 				);
 				setTimeout(() => setSaveMessage(""), 3000);
 				return;
@@ -77,7 +77,7 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 					body: JSON.stringify({
 						editedText: editedText,
 					}),
-				}
+				},
 			);
 
 			const result = await response.json();
@@ -110,7 +110,7 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 
 	const handleCancelEdit = () => {
 		setEditedText(
-			ocrResult?.finalExtractedText || ocrResult?.extractedText || ""
+			ocrResult?.finalExtractedText || ocrResult?.extractedText || "",
 		);
 		setIsEditing(false);
 	};
@@ -205,7 +205,7 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 
 			{/* Processing Summary */}
 			{ocrResult?.processingMetadata && (
-				<div className="resultCard" style={{ marginBottom: "1.5rem" }}>
+				<div className="resultCard">
 					{ocrResult?.summary && (
 						<div className="processingSummaryText">
 							<h3 className="sectionTitle">AI Summary</h3>
@@ -229,7 +229,7 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 
 			<div className="ocrResultGrid">
 				{/* Text Extraction Results */}
-				<div className="resultCard">
+				<div className="resultCard ">
 					<div className="resultHeader">
 						<h2 className="resultTitle">Extracted Text</h2>
 						<button
@@ -327,9 +327,7 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 				{/* AI Analysis and Actions */}
 				<div>
 					{/* AI Analysis */}
-					<div
-						className="resultCard"
-						style={{ marginBottom: "1.5rem" }}>
+					<div className="resultCard">
 						<h2 className="resultTitle">Content Analysis</h2>
 
 						{/* Stats */}
@@ -349,11 +347,14 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 							<div className="statCard">
 								<span className="statNumber">
 									{Math.round(
-										(ocrResult?.confidenceScore || 0) * 100
+										(ocrResult?.quality_score ||
+											ocrResult?.qualityScore ||
+											ocrResult?.confidenceScore ||
+											0) * 100,
 									)}
 									%
 								</span>
-								<span className="statLabel">Confidence</span>
+								<span className="statLabel">Quality</span>
 							</div>
 						</div>
 
@@ -388,7 +389,7 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 													className="topicTag">
 													{topic}
 												</span>
-											)
+											),
 										)}
 									</div>
 								</div>
