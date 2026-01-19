@@ -37,6 +37,10 @@ wheels/
 #models - too big (pretrained)
 models/
 
+# Hugging Face model cache (downloaded automatically)
+.cache/
+*/.cache/
+
 #envs
 *.env
 
@@ -53,3 +57,12 @@ src/backend/data
 #MICS
 .megaignore
 desktop.ini
+*.rar
+
+.python-version
+README_OLD.md
+README_OCR_BRIEF.md
+PROGRESS_LOCAL.md
+DISTRIBUTION_GUIDE.md
+QUICKSTART_OCR.md
+SETUP_ADVANCED_OCR.md

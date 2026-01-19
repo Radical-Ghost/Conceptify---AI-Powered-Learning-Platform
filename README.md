@@ -194,31 +194,6 @@ npm run preview
 
 ---
 
-## 📁 Project Structure
-
-```
-Conceptify - AI-Powered Learning Platform/
-├── src/
-│   ├── components/          # React components
-│   │   ├── ChatbotPage.jsx     # AI chat interface
-│   │   ├── OcrPage.jsx         # Document upload
-│   │   ├── OcrResultPage.jsx   # Results & editing
-│   │   └── ...
-│   ├── styles/              # CSS stylesheets
-│   ├── backend/             # Server & OCR processing
-│   │   ├── server.js           # Express API server
-│   │   ├── ocr_wrapper.py      # Python OCR pipeline
-│   │   └── data/            # Processed documents
-│   └── assets/              # Images & static files
-├── OCR/                     # Jupyter notebooks
-├── models/                  # AI models (future)
-├── package.json             # Node.js dependencies
-├── pyproject.toml           # Python dependencies
-└── README.md                # This file
-```
-
----
-
 ## 🎯 Usage Guide
 
 ### **1. Upload Documents**
@@ -281,24 +256,6 @@ Key packages (automatically installed with `uv sync`):
 
 ---
 
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. **Fork the repository**
-2. **Create a feature branch:** `git checkout -b feature/amazing-feature`
-3. **Commit changes:** `git commit -m 'Add amazing feature'`
-4. **Push to branch:** `git push origin feature/amazing-feature`
-5. **Open a Pull Request**
-
----
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
 ## 🆘 Troubleshooting
 
 ### **Common Issues:**
@@ -335,23 +292,7 @@ netstat -an | grep :5173  # Frontend
 npx kill-port 5001 5173
 ```
 
----
-
-## 🚀 Future Roadmap
-
--   [ ] **React Router Integration** - Full routing system
--   [ ] **Advanced AI Models** - Integration with Hugging Face transformers
--   [ ] **Analytics Dashboard** - Learning progress tracking
--   [ ] **Quiz Generation** - Adaptive question generation
--   [ ] **Database Integration** - MongoDB/Firebase storage
--   [ ] **Multi-user Support** - User accounts and sharing
--   [ ] **Mobile App** - React Native implementation
-
----
-
 <div align="center">
-
-**Made with ❤️ by the Conceptify Team**
 
 [⭐ Star this repo](https://github.com/Radical-Ghost/Conceptify---AI-Powered-Learning-Platform) • [Report Bug](https://github.com/Radical-Ghost/Conceptify---AI-Powered-Learning-Platform/issues) • [Request Feature](https://github.com/Radical-Ghost/Conceptify---AI-Powered-Learning-Platform/issues)
 

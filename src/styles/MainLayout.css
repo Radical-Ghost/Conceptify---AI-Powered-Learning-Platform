@@ -1,41 +1,45 @@
 .mainContentWithSidebar {
-  margin-left: 280px;
-  min-height: 100vh;
-  background-color: #f8fafc;
-  transition: margin-left 0.3s ease-in-out;
-  padding-top: 70px;
+	margin-left: 280px;
+	min-height: 100vh;
+	background-color: var(--bg-secondary, #f8fafc);
+	transition: margin-left 0.3s ease-in-out;
 }
 
 .mainContentFull {
-  margin-left: 0;
-  min-height: 100vh;
-  background-color: #f8fafc;
-  transition: margin-left 0.3s ease-in-out;
-  padding-top: 70px;
+	margin-left: 0;
+	min-height: 100vh;
+	background-color: var(--bg-secondary, #f8fafc);
+	transition: margin-left 0.3s ease-in-out;
+	padding-top: 70px;
 }
 
-/* Settings page */
 .settingsPage {
-  padding: 2rem;
-  max-width: 1200px;
+	padding: 2rem;
+	max-width: 1200px;
 }
 
-/* Responsive design */
+/* Enhanced Responsive Design */
 @media (max-width: 1024px) {
-  .mainContentWithSidebar,
-  .mainContentFull {
-    margin-left: 0;
-    padding-top: 70px;
-  }
+	.mainContentWithSidebar,
+	.mainContentFull {
+		margin-left: 0;
+		padding-top: 70px;
+	}
 }
 
 @media (max-width: 768px) {
-  .mainContentWithSidebar,
-  .mainContentFull {
-    padding-top: 70px;
-  }
-  
-  .settingsPage {
-    padding: 1rem;
-  }
+	.mainContentWithSidebar,
+	.mainContentFull {
+		padding-top: 70px;
+	}
+
+	.settingsPage {
+		padding: 1rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.settingsPage {
+		padding: 0.75rem;
+	}
 }

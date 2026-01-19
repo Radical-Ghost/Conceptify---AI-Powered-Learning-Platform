@@ -12,6 +12,7 @@ import tempfile
 from datetime import datetime
 from collections import Counter
 import hashlib
+import time
 
 # Core dependencies
 required_imports = [
@@ -22,6 +23,8 @@ required_imports = [
     ("numpy", "numpy"),
     ("PIL", "Pillow"),
     ("nltk", "nltk"),
+    ("torch", "torch"),
+    ("transformers", "transformers"),
 ]
 missing = []
 for mod_name, pip_name in required_imports:
@@ -51,11 +54,128 @@ import cv2
 import numpy as np
 from PIL import Image, ImageEnhance
 import nltk
+import torch
+from transformers import pipeline
 DEPS_AVAILABLE = True
 class OCRPipeline:
     def __init__(self):
         self.setup_nltk()
         self.english_words, self.word_freq, self.stop_words = self.create_dict()
+        self.summarizer = None
+        self.setup_summarizer()
+        # Advanced OCR models
+        self.nougat_model = None
+        self.nougat_processor = None
+        self.trocr_model = None
+        self.trocr_processor = None
+        self.setup_advanced_ocr()
+
+    def setup_summarizer(self):
+        """Initialise BART-Large summarizer if dependencies are available"""
+        try:
+            # Check GPU availability
+            use_gpu = torch.cuda.is_available()
+            device = 0 if use_gpu else -1
+            
+            # Print GPU info for debugging (to stderr to avoid corrupting JSON output)
+            if use_gpu:
+                print(f"🎮 GPU Detected: {torch.cuda.get_device_name(0)}", file=sys.stderr)
+                print(f"💾 GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.2f} GB", file=sys.stderr)
+                print(f"⚡ CUDA Version: {torch.version.cuda}", file=sys.stderr)
+            else:
+                print("⚠️  No GPU detected - using CPU (this will be slower)", file=sys.stderr)
+            
+            # Try LED first (better for documents), fallback to BART
+            try:
+                print("📥 Loading LED model (better for documents)...", file=sys.stderr)
+                self.summarizer = pipeline(
+                    "summarization",
+                    model="pszemraj/led-large-book-summary",
+                    device=device,
+                    torch_dtype=torch.float16 if use_gpu else torch.float32,
+                )
+                self.summarizer_model_name = "pszemraj/led-large-book-summary"
+                print("✅ LED model loaded successfully", file=sys.stderr)
+            except Exception as e:
+                print(f"⚠️  LED not available ({e}), using BART...", file=sys.stderr)
+                self.summarizer = pipeline(
+                    "summarization",
+                    model="facebook/bart-large-cnn",
+                    device=device,
+                    torch_dtype=torch.float16 if use_gpu else torch.float32,
+                )
+                self.summarizer_model_name = "facebook/bart-large-cnn"
+            
+            # Increased word limits for better coverage with dynamic sizing
+            # Dynamic summary length based on input text
+            # 500 words -> 100, 1000 -> 140, 2000 -> 250, 3000+ -> 400
+            self.summarizer_max_words = 1200 if use_gpu else 600
+            self.summarizer_max_chunks = 4 if use_gpu else 2
+            self.summarizer_batch_size = 4 if use_gpu else 1
+            self.summarizer_trim_words = 3500 if use_gpu else 1800
+            # Longer summaries for more comprehensive output
+            self.summarizer_max_length = 300 if use_gpu else 200
+            self.summarizer_min_length = 120 if use_gpu else 80
+            self.summarizer_allow_refine = use_gpu
+            self.summarizer_strategy = "gpu" if use_gpu else "cpu"
+            
+            print(f"✅ BART model loaded on: {'GPU' if use_gpu else 'CPU'}", file=sys.stderr)
+            
+        except Exception as e:
+            print(f"❌ Error loading BART model: {e}", file=sys.stderr)
+            self.summarizer = None
+            self.summarizer_max_words = 0
+            self.summarizer_max_chunks = 0
+            self.summarizer_batch_size = 1
+            self.summarizer_trim_words = 0
+            self.summarizer_max_length = 0
+            self.summarizer_min_length = 0
+            self.summarizer_allow_refine = False
+            self.summarizer_strategy = "unavailable"
+    
+    def setup_advanced_ocr(self):
+        """Setup Nougat and TrOCR models for academic/handwritten documents"""
+        try:
+            use_gpu = torch.cuda.is_available()
+            device = 0 if use_gpu else -1
+            
+            # Try loading Nougat (for academic documents with math)
+            try:
+                nougat_path = os.path.join(
+                    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                    "models", "nougat-base"
+                )
+                if os.path.exists(nougat_path):
+                    from transformers import VisionEncoderDecoderModel, TrOCRProcessor
+                    self.nougat_processor = TrOCRProcessor.from_pretrained(nougat_path)
+                    self.nougat_model = VisionEncoderDecoderModel.from_pretrained(
+                        nougat_path,
+                        torch_dtype=torch.float16 if use_gpu else torch.float32
+                    )
+                    if use_gpu:
+                        self.nougat_model = self.nougat_model.to('cuda')
+                    print("✅ Nougat model loaded for academic documents", file=sys.stderr)
+                else:
+                    print("⚠️  Nougat model not found - will use standard OCR", file=sys.stderr)
+            except Exception as e:
+                print(f"⚠️  Could not load Nougat: {e}", file=sys.stderr)
+            
+            # Try loading TrOCR (for handwritten text)
+            try:
+                from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+                self.trocr_processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-handwritten")
+                self.trocr_model = VisionEncoderDecoderModel.from_pretrained(
+                    "microsoft/trocr-base-handwritten",
+                    torch_dtype=torch.float16 if use_gpu else torch.float32
+                )
+                if use_gpu:
+                    self.trocr_model = self.trocr_model.to('cuda')
+                print("✅ TrOCR model loaded for handwritten text", file=sys.stderr)
+            except Exception as e:
+                print(f"⚠️  Could not load TrOCR: {e}", file=sys.stderr)
+                
+        except Exception as e:
+            print(f"⚠️  Advanced OCR setup failed: {e}", file=sys.stderr)
         
     def setup_nltk(self):
         """Setup NLTK with quiet initialization"""
@@ -245,7 +365,8 @@ class OCRPipeline:
                 "word_count": 0,
                 "estimated_reading_time": 0,
                 "key_topics": [],
-                "confidence_score": 0.0
+                "confidence_score": 0.0,
+                "summary": ""
             }
         
         words = text.split()
@@ -267,14 +388,21 @@ class OCRPipeline:
                 # Extract nouns as potential concepts (excluding stopwords)
                 nouns = [word for word, pos in pos_tags 
                         if pos.startswith('NN') and len(word) > 3 
-                        and word not in self.stop_words]
+                        and word not in self.stop_words and word.isalpha()]
                 noun_freq = Counter(nouns)
-                concepts = [word.title() for word, freq in noun_freq.most_common(8) if freq > 1]
+                # Get concepts that appear at least twice, up to 10 concepts
+                concepts = [word.title() for word, freq in noun_freq.most_common(15) if freq >= 2][:10]
                 
-                # Extract proper nouns as key topics
-                proper_nouns = [word for word, pos in pos_tags 
+                # If we don't have enough, include single-occurrence important nouns
+                if len(concepts) < 5:
+                    additional = [word.title() for word, freq in noun_freq.most_common(10) if freq == 1]
+                    concepts.extend(additional[:5 - len(concepts)])
+                
+                # Extract proper nouns and technical terms as key topics
+                proper_nouns = [word.title() for word, pos in pos_tags 
                               if pos == 'NNP' and len(word) > 2]
-                key_topics = list(set(proper_nouns))[:5]
+                # Remove duplicates while preserving order
+                key_topics = list(dict.fromkeys(proper_nouns))[:7]
                 
             except:
                 # Fallback to simple word analysis
@@ -306,8 +434,36 @@ class OCRPipeline:
         # Reading time (average 200 words per minute)
         reading_time = max(1, round(word_count / 200))
         
-        # Confidence score based on text quality
-        confidence_score = min(1.0, max(0.1, (word_count / 100) * 0.8 + (len(concepts) / 10) * 0.2))
+        # OCR Quality Score - based on text completeness and structure
+        # More meaningful than arbitrary confidence
+        has_paragraphs = text.count('\n') > 2
+        has_punctuation = any(p in text for p in ['.', '!', '?'])
+        avg_word_length = sum(len(w) for w in words) / len(words) if words else 0
+        
+        quality_score = 0
+        # Has reasonable word count (30% weight)
+        if word_count > 50:
+            quality_score += 0.3
+        elif word_count > 20:
+            quality_score += 0.15
+        
+        # Has structure (20% weight)
+        if has_paragraphs:
+            quality_score += 0.2
+        
+        # Has proper punctuation (20% weight)
+        if has_punctuation:
+            quality_score += 0.2
+        
+        # Reasonable word length (15% weight) - not too short (OCR errors) or long (gibberish)
+        if 4 <= avg_word_length <= 12:
+            quality_score += 0.15
+        
+        # Has identified concepts (15% weight)
+        if len(concepts) >= 3:
+            quality_score += 0.15
+        elif len(concepts) >= 1:
+            quality_score += 0.075
         
         return {
             "concepts": concepts,
@@ -315,8 +471,330 @@ class OCRPipeline:
             "word_count": word_count,
             "estimated_reading_time": reading_time,
             "key_topics": key_topics,
-            "confidence_score": round(confidence_score, 2)
+            "quality_score": round(quality_score, 2),  # 0.0 to 1.0
+            "has_structure": has_paragraphs,
+            "complexity_ratio": round(complexity_ratio, 2)
         }
+
+    def calculate_summary_length(self, word_count):
+        """Calculate appropriate summary length based on input text length"""
+        # Dynamic scaling: 500->100, 1000->140, 2000->250, 3000+->400
+        if word_count <= 500:
+            max_len = 100
+            min_len = 60
+        elif word_count <= 1000:
+            max_len = 140
+            min_len = 90
+        elif word_count <= 1500:
+            max_len = 180
+            min_len = 120
+        elif word_count <= 2000:
+            max_len = 250
+            min_len = 150
+        elif word_count <= 3000:
+            max_len = 350
+            min_len = 200
+        else:
+            max_len = 400
+            min_len = 250
+        
+        return max_len, min_len
+    
+    def clean_text_for_summarization(self, text):
+        """Clean and validate text before summarization to prevent CUDA errors"""
+        if not text:
+            return ""
+        
+        # Remove excessive whitespace
+        text = re.sub(r'\s+', ' ', text)
+        
+        # Remove non-printable characters that can cause tokenization issues
+        text = ''.join(char for char in text if char.isprintable() or char in '\n\t')
+        
+        # Remove extremely long words (likely OCR errors)
+        words = text.split()
+        cleaned_words = [w if len(w) < 50 else w[:50] for w in words]
+        text = ' '.join(cleaned_words)
+        
+        return text.strip()
+    
+    def summarize_text(self, text):
+        """Summarize extracted text with BART-Large"""
+        self.last_summary_details = {
+            "generated": False,
+            "strategy": getattr(self, "summarizer_strategy", "unknown"),
+            "reason": "",
+            "chunks": 0,
+            "trimmed": False,
+            "trimmed_words": 0,
+            "duration": 0.0,
+        }
+
+        if not self.summarizer:
+            self.last_summary_details["reason"] = "summarizer_unavailable"
+            return ""
+
+        if not text or len(text.strip()) < 80:
+            self.last_summary_details["reason"] = "not_enough_text"
+            return ""
+        
+        # Clean text to prevent tokenization errors
+        text = self.clean_text_for_summarization(text)
+
+        start_time = time.perf_counter()
+
+        words_tokens = text.split()
+        total_words_original = len(words_tokens)
+        trimmed_words_removed = 0
+        trim_words = getattr(self, "summarizer_trim_words", 0)
+        if trim_words and total_words_original > trim_words:
+            text = " ".join(words_tokens[:trim_words])
+            trimmed_words_removed = total_words_original - trim_words
+            self.last_summary_details["trimmed"] = True
+            self.last_summary_details["trimmed_words"] = trimmed_words_removed
+
+        sentences = re.split(r'(?<=[.!?]) +', text)
+        chunks = []
+        current_chunk = []
+        current_word_count = 0
+        max_words = self.summarizer_max_words or 900
+
+        for sentence in sentences:
+            words_in_sentence = sentence.split()
+            if not words_in_sentence:
+                continue
+
+            if current_word_count + len(words_in_sentence) <= max_words:
+                current_chunk.append(sentence)
+                current_word_count += len(words_in_sentence)
+            else:
+                if current_chunk:
+                    chunks.append(" ".join(current_chunk))
+                current_chunk = [sentence]
+                current_word_count = len(words_in_sentence)
+
+        if current_chunk:
+            chunks.append(" ".join(current_chunk))
+
+        max_chunks = getattr(self, "summarizer_max_chunks", 3) or 3
+        chunks = chunks[:max_chunks]
+        chunk_count = len(chunks)
+        self.last_summary_details["chunks"] = chunk_count
+
+        if not chunks:
+            self.last_summary_details["reason"] = "no_chunks_available"
+            self.last_summary_details["duration"] = round(time.perf_counter() - start_time, 3)
+            return ""
+        
+        # Calculate dynamic summary length based on input text
+        total_words = len(text.split())
+        max_length, min_length = self.calculate_summary_length(total_words)
+        print(f"\ud83d\udcca Dynamic summary length: {min_length}-{max_length} words (input: {total_words} words)", file=sys.stderr)
+
+        try:
+            generation_kwargs = {
+                "max_length": max_length,
+                "min_length": min_length,
+                "do_sample": False,
+                "truncation": True,
+                "max_new_tokens": 250,  # Limit output tokens
+                # Better summary quality settings
+                "num_beams": 4,  # Beam search for better quality
+                "length_penalty": 1.0,  # Neutral length preference
+                "early_stopping": True,
+            }
+
+            if chunk_count > 1:
+                generation_kwargs["batch_size"] = self.summarizer_batch_size or 1
+
+            # Try GPU first, fallback to CPU on error
+            try:
+                results = self.summarizer(
+                    chunks if chunk_count > 1 else chunks[0],
+                    **generation_kwargs,
+                )
+            except RuntimeError as gpu_error:
+                # GPU error - use simple extractive summary instead
+                print(f"⚠️  Model summarization failed: {str(gpu_error)[:100]}", file=sys.stderr)
+                print(f"📝 Using extractive summary fallback...", file=sys.stderr)
+                
+                # Simple extractive summary - take first few sentences
+                from nltk.tokenize import sent_tokenize
+                try:
+                    sentences = sent_tokenize(text)
+                    # Take first 5 sentences or 200 words, whichever is less
+                    summary_sentences = []
+                    word_count = 0
+                    for sent in sentences[:10]:
+                        words_in_sent = len(sent.split())
+                        if word_count + words_in_sent > 200:
+                            break
+                        summary_sentences.append(sent)
+                        word_count += words_in_sent
+                    
+                    extractive_summary = ' '.join(summary_sentences)
+                    if extractive_summary:
+                        results = [{'summary_text': extractive_summary}]
+                        print(f"✅ Extractive summary created: {len(extractive_summary.split())} words", file=sys.stderr)
+                    else:
+                        raise gpu_error
+                except Exception:
+                    raise gpu_error  # Raise original error if extractive also fails
+
+            if isinstance(results, dict):
+                results = [results]
+
+            summaries = [
+                res.get("summary_text", "").strip()
+                for res in results
+                if isinstance(res, dict) and res.get("summary_text")
+            ]
+        except Exception as exc:
+            error_msg = f"generation_error:{type(exc).__name__}"
+            print(f"❌ Summary generation failed: {type(exc).__name__}", file=sys.stderr)
+            print(f"   Error details: {str(exc)[:200]}", file=sys.stderr)
+            self.last_summary_details["reason"] = error_msg
+            self.last_summary_details["duration"] = round(time.perf_counter() - start_time, 3)
+            self.last_summary_details["error_detail"] = str(exc)[:500]
+            return ""
+
+        if not summaries:
+            self.last_summary_details["reason"] = "empty_summary"
+            self.last_summary_details["duration"] = round(time.perf_counter() - start_time, 3)
+            return ""
+
+        combined_summary = " ".join(summaries)
+
+        if len(summaries) > 1 and getattr(self, "summarizer_allow_refine", False):
+            try:
+                refine_kwargs = generation_kwargs.copy()
+                refine_kwargs.pop("batch_size", None)
+                # Slightly longer for final refined summary
+                refine_kwargs["max_length"] = min(350, (self.summarizer_max_length or 300) + 50)
+                refine_kwargs["min_length"] = max(150, (self.summarizer_min_length or 120) + 30)
+                refined = self.summarizer(
+                    combined_summary,
+                    **refine_kwargs,
+                )
+                if isinstance(refined, list) and refined:
+                    combined_summary = refined[0].get("summary_text", combined_summary).strip()
+                elif isinstance(refined, dict):
+                    combined_summary = refined.get("summary_text", combined_summary).strip()
+            except Exception:
+                pass
+
+        duration = round(time.perf_counter() - start_time, 3)
+        self.last_summary_details.update({
+            "generated": True,
+            "reason": "",
+            "duration": duration,
+            "original_words": total_words_original,
+            "summary_words": len(combined_summary.split()),
+        })
+
+        return combined_summary.strip()
+    
+    def detect_document_type(self, pdf_path):
+        """Detect if PDF is academic/mathematical, handwritten, or standard"""
+        try:
+            # Quick scan of first few pages
+            with pdfplumber.open(pdf_path) as pdf:
+                sample_text = ""
+                for page in pdf.pages[:3]:  # Check first 3 pages
+                    text = page.extract_text() or ''
+                    sample_text += text
+                
+                # Check for academic/mathematical indicators
+                math_indicators = ['equation', 'theorem', 'proof', 'lemma', 'formula', 
+                                 'integral', 'derivative', 'matrix', 'coefficient']
+                academic_score = sum(1 for indicator in math_indicators 
+                                   if indicator in sample_text.lower())
+                
+                # Check if native text extraction worked well
+                words = sample_text.split()
+                has_native_text = len(words) > 50
+                
+                # Determine document type
+                if academic_score >= 2 and self.nougat_model:
+                    return "academic"  # Use Nougat
+                elif not has_native_text:
+                    return "handwritten"  # Use TrOCR
+                else:
+                    return "standard"  # Use current pipeline
+        except:
+            return "standard"
+    
+    def process_with_nougat(self, pdf_path):
+        """Process academic PDF with Nougat for better math/formula extraction"""
+        try:
+            from pdf2image import convert_from_path
+            import cv2
+            
+            # Try multiple common poppler locations
+            poppler_paths = [
+                r'C:\Coding\poppler-25.12.0\Library\bin',
+                r'C:\poppler\Library\bin',
+                r'C:\Coding\Mics\poppler-25.07.0\Library\bin',
+                None  # Try system PATH
+            ]
+            
+            pages = None
+            for poppler_path in poppler_paths:
+                try:
+                    pages = convert_from_path(pdf_path, dpi=300, poppler_path=poppler_path)
+                    break
+                except Exception:
+                    continue
+            
+            if not pages:
+                raise Exception("Could not convert PDF - check Poppler installation")
+            extracted_texts = []
+            
+            for i, page_img in enumerate(pages[:10]):  # Limit to first 10 pages for speed
+                # Preprocess image
+                img_array = np.array(page_img)
+                img_gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+                _, img_thresh = cv2.threshold(img_gray, 150, 255, cv2.THRESH_BINARY)
+                img_rgb = cv2.cvtColor(img_thresh, cv2.COLOR_GRAY2RGB)
+                pil_img = Image.fromarray(img_rgb)
+                
+                # Run Nougat
+                pixel_values = self.nougat_processor(images=pil_img, return_tensors="pt").pixel_values
+                if torch.cuda.is_available():
+                    pixel_values = pixel_values.to('cuda')
+                
+                generated_ids = self.nougat_model.generate(pixel_values)
+                text = self.nougat_processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+                
+                if text.strip():
+                    extracted_texts.append(f"--- Page {i+1} ---\n{text}")
+            
+            return "\n\n".join(extracted_texts)
+        except Exception as e:
+            print(f"⚠️  Nougat processing failed: {e}, falling back to standard OCR", file=sys.stderr)
+            return None
+    
+    def process_with_trocr(self, image):
+        """Process handwritten text with TrOCR"""
+        try:
+            if not self.trocr_model or not self.trocr_processor:
+                return None
+            
+            # Prepare image
+            if isinstance(image, np.ndarray):
+                image = Image.fromarray(image)
+            
+            pixel_values = self.trocr_processor(images=image, return_tensors="pt").pixel_values
+            if torch.cuda.is_available():
+                pixel_values = pixel_values.to('cuda')
+            
+            generated_ids = self.trocr_model.generate(pixel_values)
+            text = self.trocr_processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+            
+            return text.strip()
+        except Exception as e:
+            print(f"⚠️  TrOCR failed: {e}", file=sys.stderr)
+            return None
     
     def process_file(self, file_path, user_id=None):
         """Main processing pipeline for frontend integration"""
@@ -338,6 +816,22 @@ class OCRPipeline:
             all_text = result['extracted_text']
             analysis = self.analyze_content(all_text)
             
+            print(f"\n🤖 AI ANALYSIS STARTING", file=sys.stderr)
+            print(f"{'='*60}", file=sys.stderr)
+            
+            summary_text = self.summarize_text(all_text)
+            summary_details = getattr(self, "last_summary_details", {})
+            
+            if summary_text:
+                analysis["summary"] = summary_text
+                analysis["summary_model"] = getattr(self, "summarizer_model_name", "facebook/bart-large-cnn")
+                print(f"✅ Summary generated: {len(summary_text.split())} words", file=sys.stderr)
+                print(f"📊 Model: {analysis['summary_model']} ({summary_details.get('strategy', 'unknown').upper()})", file=sys.stderr)
+            else:
+                print(f"⚠️  No summary generated: {summary_details.get('reason', 'unknown')}", file=sys.stderr)
+            if summary_details:
+                analysis["summary_details"] = summary_details
+            
             # Create Firebase-ready JSON structure (Firebase will add timestamp and ID)
             firebase_data = {
                 "user_id": user_id or "anonymous",
@@ -358,7 +852,13 @@ class OCRPipeline:
                 "processing_metadata": {
                     "nltk_available": self.nltk_available,
                     "processing_time": result.get('processing_time', 0),
-                    "corrections_applied": result.get('corrections_applied', 0)
+                    "corrections_applied": result.get('corrections_applied', 0),
+                    "summary_time": summary_details.get('duration', 0.0),
+                    "summary_strategy": summary_details.get('strategy'),
+                    "summary_chunks": summary_details.get('chunks', 0),
+                    "summary_trimmed_words": summary_details.get('trimmed_words', 0),
+                    "summary_generated": summary_details.get('generated', False),
+                    "summary_reason": summary_details.get('reason', "")
                 }
             }
             
@@ -378,8 +878,38 @@ class OCRPipeline:
             }
     
     def process_pdf(self, pdf_path):
-        """Process PDF file with hybrid approach"""
+        """Process PDF file with intelligent routing to best OCR method"""
         start_time = datetime.now()
+        
+        # Detect document type and route to appropriate processor
+        doc_type = self.detect_document_type(pdf_path)
+        print(f"\n{'='*60}", file=sys.stderr)
+        print(f"📄 DOCUMENT PROCESSING STARTED", file=sys.stderr)
+        print(f"{'='*60}", file=sys.stderr)
+        print(f"📋 Document type detected: {doc_type.upper()}", file=sys.stderr)
+        
+        # Try academic processing with Nougat
+        if doc_type == "academic" and self.nougat_model:
+            print(f"🎓 Using: NOUGAT (Academic PDF processor)", file=sys.stderr)
+            print(f"📊 Features: LaTeX formulas, tables, academic structure", file=sys.stderr)
+            nougat_text = self.process_with_nougat(pdf_path)
+            if nougat_text:
+                processing_time = (datetime.now() - start_time).total_seconds()
+                print(f"✅ Nougat processing complete: {processing_time:.2f}s", file=sys.stderr)
+                return {
+                    "processing_method": "nougat_academic",
+                    "extracted_text": nougat_text,
+                    "raw_text": nougat_text,
+                    "corrected_text": nougat_text,
+                    "pages_processed": len(nougat_text.split("---")),
+                    "images_processed": 0,
+                    "processing_time": round(processing_time, 2),
+                    "corrections_applied": 0
+                }
+        
+        # Standard hybrid processing
+        print(f"🔧 Using: HYBRID PIPELINE (PyMuPDF + Tesseract)", file=sys.stderr)
+        print(f"📊 Features: Fast text extraction, OCR for images, NLTK cleanup", file=sys.stderr)
         text_blocks = []
         image_blocks = []
         raw_texts = []
@@ -421,7 +951,14 @@ class OCRPipeline:
                         pil_img = ImageEnhance.Sharpness(pil_img).enhance(2.0)
                         
                         img_cv = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
-                        raw_text = pytesseract.image_to_string(img_cv, config='--oem 3 --psm 6 -l eng').strip()
+                        
+                        # Try TrOCR for handwritten-looking content
+                        if doc_type == "handwritten" and self.trocr_model:
+                            raw_text = self.process_with_trocr(pil_img) or ""
+                            if not raw_text:  # Fallback to Tesseract
+                                raw_text = pytesseract.image_to_string(img_cv, config='--oem 3 --psm 6 -l eng').strip()
+                        else:
+                            raw_text = pytesseract.image_to_string(img_cv, config='--oem 3 --psm 6 -l eng').strip()
                         
                         if raw_text:
                             corrected_text = self.correct_text(raw_text)
@@ -451,6 +988,13 @@ class OCRPipeline:
             all_text_parts.append(block['corrected_content'])
         
         processing_time = (datetime.now() - start_time).total_seconds()
+        
+        print(f"\n✅ OCR COMPLETE", file=sys.stderr)
+        print(f"⏱️  Processing time: {processing_time:.2f}s", file=sys.stderr)
+        print(f"📄 Pages processed: {len(set([b['page'] for b in text_blocks + image_blocks]))}", file=sys.stderr)
+        print(f"🖼️  Images processed: {len(image_blocks)}", file=sys.stderr)
+        print(f"📝 Words extracted: {len(''.join(all_text_parts).split())}", file=sys.stderr)
+        print(f"{'='*60}\n", file=sys.stderr)
         
         return {
             "processing_method": "hybrid_pdf",
@@ -541,10 +1085,15 @@ def main():
                 'enhancedTextNltk': corrected_text,
                 'wordCount': ai_analysis.get('word_count', len(extracted_text.split())),
                 'readingTime': ai_analysis.get('estimated_reading_time', max(1, len(extracted_text.split()) // 200)),
-                'confidenceScore': ai_analysis.get('confidence_score', 0.85),
+                'qualityScore': ai_analysis.get('quality_score', ai_analysis.get('confidence_score', 0.85)),  # Use new quality_score, fallback to old confidence
+                'quality_score': ai_analysis.get('quality_score', 0.85),  # New field
+                'confidenceScore': ai_analysis.get('quality_score', ai_analysis.get('confidence_score', 0.85)),  # Legacy support
                 'concepts': ai_analysis.get('concepts', []),
                 'keyTopics': ai_analysis.get('key_topics', []),
                 'difficulty': ai_analysis.get('difficulty', 'Intermediate'),
+                'summary': ai_analysis.get('summary', ''),
+                'summaryDetails': ai_analysis.get('summary_details', {}),
+                'summaryTime': result.get('processing_metadata', {}).get('summary_time', 0.0),
                 'processingMetadata': result.get('processing_metadata', {}),
                 'fileInfo': result.get('extraction_results', {})
             }

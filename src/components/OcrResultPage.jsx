@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
 	Eye,
 	MessageSquare,
@@ -13,13 +14,45 @@ import {
 } from "lucide-react";
 import "../styles/OcrResultPage.css";
 
-const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
+const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
+	const navigate = useNavigate();
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedText, setEditedText] = useState(
-		ocrResult?.finalExtractedText || ocrResult?.extractedText || ""
+		ocrResult?.finalExtractedText || ocrResult?.extractedText || "",
 	);
 	const [selectedTab, setSelectedTab] = useState("final"); // 'original', 'enhanced', 'final'
 	const [saveMessage, setSaveMessage] = useState("");
+	const [addToChatMessage, setAddToChatMessage] = useState("");
+	const summaryDetails =
+		ocrResult?.summaryDetails ||
+		ocrResult?.processingMetadata?.summary_details ||
+		ocrResult?.summary_details;
+	const summaryTime =
+		ocrResult?.summaryTime ??
+		summaryDetails?.duration ??
+		ocrResult?.processingMetadata?.summary_time;
+	const summaryMetaItems = [];
+
+	if (summaryTime !== undefined && summaryTime !== null) {
+		const numericTime = Number(summaryTime);
+		if (!Number.isNaN(numericTime)) {
+			summaryMetaItems.push(
+				`Generated in ${numericTime.toFixed(numericTime >= 1 ? 1 : 2)}s`,
+			);
+		}
+	}
+
+	if (summaryDetails?.strategy) {
+		summaryMetaItems.push(`Mode: ${summaryDetails.strategy}`);
+	}
+
+	if (summaryDetails?.chunks) {
+		summaryMetaItems.push(`Chunks: ${summaryDetails.chunks}`);
+	}
+
+	if (summaryDetails?.trimmed && summaryDetails?.trimmed_words) {
+		summaryMetaItems.push(`Trimmed ${summaryDetails.trimmed_words} words`);
+	}
 
 	const handleSaveEdit = async () => {
 		try {
@@ -28,7 +61,7 @@ const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
 
 			if (!filename) {
 				setSaveMessage(
-					"Error: No saved filename found. Cannot update this result."
+					"Error: No saved filename found. Cannot update this result.",
 				);
 				setTimeout(() => setSaveMessage(""), 3000);
 				return;
@@ -44,7 +77,7 @@ const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
 					body: JSON.stringify({
 						editedText: editedText,
 					}),
-				}
+				},
 			);
 
 			const result = await response.json();
@@ -77,9 +110,17 @@ const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
 
 	const handleCancelEdit = () => {
 		setEditedText(
-			ocrResult?.finalExtractedText || ocrResult?.extractedText || ""
+			ocrResult?.finalExtractedText || ocrResult?.extractedText || "",
 		);
 		setIsEditing(false);
+	};
+
+	const handleAddToChat = () => {
+		if (addDocumentToChat && ocrResult) {
+			addDocumentToChat(ocrResult);
+			setAddToChatMessage("Document added to chat! ✅");
+			setTimeout(() => setAddToChatMessage(""), 3000);
+		}
 	};
 
 	return (
@@ -164,38 +205,31 @@ const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
 
 			{/* Processing Summary */}
 			{ocrResult?.processingMetadata && (
-				<div className="resultCard" style={{ marginBottom: "1.5rem" }}>
-					<h2 className="resultTitle">Processing Summary</h2>
-					<div className="processingStats">
-						<div className="statItem">
-							<BarChart3 size={16} />
-							<span>
-								Pages:{" "}
-								{ocrResult?.fileInfo?.pages_processed || "N/A"}
-							</span>
+				<div className="resultCard">
+					{ocrResult?.summary && (
+						<div className="processingSummaryText">
+							<h3 className="sectionTitle">AI Summary</h3>
+							<p className="summaryText">{ocrResult.summary}</p>
+							{summaryMetaItems.length > 0 && (
+								<div className="summaryMeta">
+									{summaryMetaItems.map((item, index) => (
+										<span key={index}>{item}</span>
+									))}
+								</div>
+							)}
+							{ocrResult?.summaryModel && (
+								<span className="summaryModelTag">
+									Model: {ocrResult.summaryModel}
+								</span>
+							)}
 						</div>
-						<div className="statItem">
-							<Target size={16} />
-							<span>
-								Images:{" "}
-								{ocrResult?.fileInfo?.images_processed || "N/A"}
-							</span>
-						</div>
-						<div className="statItem">
-							<Clock size={16} />
-							<span>
-								Time:{" "}
-								{ocrResult?.processingMetadata?.processing_time}
-								s
-							</span>
-						</div>
-					</div>
+					)}
 				</div>
 			)}
 
 			<div className="ocrResultGrid">
 				{/* Text Extraction Results */}
-				<div className="resultCard">
+				<div className="resultCard ">
 					<div className="resultHeader">
 						<h2 className="resultTitle">Extracted Text</h2>
 						<button
@@ -293,9 +327,7 @@ const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
 				{/* AI Analysis and Actions */}
 				<div>
 					{/* AI Analysis */}
-					<div
-						className="resultCard"
-						style={{ marginBottom: "1.5rem" }}>
+					<div className="resultCard">
 						<h2 className="resultTitle">Content Analysis</h2>
 
 						{/* Stats */}
@@ -315,11 +347,14 @@ const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
 							<div className="statCard">
 								<span className="statNumber">
 									{Math.round(
-										(ocrResult?.confidenceScore || 0) * 100
+										(ocrResult?.quality_score ||
+											ocrResult?.qualityScore ||
+											ocrResult?.confidenceScore ||
+											0) * 100,
 									)}
 									%
 								</span>
-								<span className="statLabel">Confidence</span>
+								<span className="statLabel">Quality</span>
 							</div>
 						</div>
 
@@ -354,7 +389,7 @@ const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
 													className="topicTag">
 													{topic}
 												</span>
-											)
+											),
 										)}
 									</div>
 								</div>
@@ -375,8 +410,28 @@ const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
 					{/* Actions */}
 					<div className="actionCard">
 						<h2 className="resultTitle">Learning Actions</h2>
+
+						{/* Add to Chat Message */}
+						{addToChatMessage && (
+							<div
+								style={{
+									padding: "0.75rem 1rem",
+									marginBottom: "1rem",
+									borderRadius: "0.5rem",
+									backgroundColor: "#dcfce7",
+									border: "1px solid #10b981",
+									color: "#059669",
+									display: "flex",
+									alignItems: "center",
+									gap: "0.5rem",
+								}}>
+								<CheckCircle size={16} />
+								<span>{addToChatMessage}</span>
+							</div>
+						)}
+
 						<button
-							onClick={() => setCurrentPage("chatbot")}
+							onClick={handleAddToChat}
 							className="actionButton actionButtonBlue">
 							<div className="actionContent">
 								<MessageSquare
@@ -386,16 +441,16 @@ const OCRResultPage = ({ ocrResult, setCurrentPage, setOcrResult }) => {
 								/>
 								<div>
 									<div className="actionTitle">
-										Discuss with AI
+										Add to AI Chat
 									</div>
 									<div className="actionDescription">
-										Ask questions about this content
+										Load this document for AI discussions
 									</div>
 								</div>
 							</div>
 						</button>
 						<button
-							onClick={() => setCurrentPage("ocr")}
+							onClick={() => navigate("/ocr")}
 							className="actionButton actionButtonGreen">
 							<div className="actionContent">
 								<Upload

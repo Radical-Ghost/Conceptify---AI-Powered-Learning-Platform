@@ -1,8 +1,8 @@
 .landingPage {
   min-height: 100vh;
   height: 100%;
-  background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #4338ca 100%);
-  color: white;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+  color: #f8fafc;
   padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem);
   display: flex;
   flex-direction: column;
@@ -39,8 +39,9 @@
 .brandTitle {
   font-size: clamp(2rem, 6vw, 4rem);
   font-weight: 800;
-  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  background: linear-gradient(135deg, #60a5fa, #818cf8);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-left: clamp(0.5rem, 2vw, 1rem);
   text-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -48,7 +49,7 @@
 
 .subtitle {
   font-size: clamp(1rem, 2.5vw, 1.5rem);
-  color: #e0e7ff;
+  color: #cbd5e1;
   max-width: 90%;
   margin: 0 auto;
   line-height: 1.6;
@@ -65,7 +66,7 @@
 }
 
 .featureCard {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(30, 41, 59, 0.7);
   backdrop-filter: blur(12px);
   border-radius: clamp(12px, 2vw, 20px);
   padding: clamp(1.5rem, 4vw, 2.5rem);
@@ -75,12 +76,13 @@
   flex-direction: column;
   justify-content: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(100, 116, 139, 0.2);
 }
 
 .featureCard:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  background-color: rgba(30, 41, 59, 0.9);
 }
 
 .featureIcon {
@@ -92,10 +94,11 @@
   font-size: clamp(1.125rem, 2.5vw, 1.5rem);
   font-weight: 600;
   margin-bottom: 0.75rem;
+  color: #e2e8f0;
 }
 
 .featureDescription {
-  color: #d1d5db;
+  color: #94a3b8;
   font-size: clamp(0.875rem, 2vw, 1rem);
   line-height: 1.5;
 }
@@ -110,7 +113,7 @@
 }
 
 .primaryButton {
-  background-color: #2563eb;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
   padding: clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2.5rem);
   border-radius: clamp(8px, 1.5vw, 12px);
@@ -120,29 +123,74 @@
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: clamp(120px, 25vw, 160px);
-  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);
 }
 
 .primaryButton:hover {
-  background-color: #1d4ed8;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 6px 12px rgba(99, 102, 241, 0.4);
 }
 
 .secondaryButton {
   background-color: transparent;
-  color: white;
+  color: #e2e8f0;
   padding: clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2.5rem);
   border-radius: clamp(8px, 1.5vw, 12px);
   font-size: clamp(1rem, 2.5vw, 1.25rem);
   font-weight: 600;
-  border: 2px solid #60a5fa;
+  border: 2px solid #6366f1;
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: clamp(120px, 25vw, 160px);
 }
 
 .secondaryButton:hover {
-  background-color: rgba(96, 165, 250, 0.2);
+  background-color: rgba(99, 102, 241, 0.1);
   transform: translateY(-2px);
+  border-color: #8b5cf6;
+}
+
+/* Light theme support */
+@media (prefers-color-scheme: light) {
+  .landingPage {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+    color: #1e293b;
+  }
+  
+  .brandTitle {
+    background: linear-gradient(135deg, #1e40af, #3730a3);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  
+  .subtitle {
+    color: #475569;
+  }
+  
+  .featureCard {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+  }
+  
+  .featureCard:hover {
+    background-color: rgba(255, 255, 255, 0.95);
+  }
+  
+  .featureTitle {
+    color: #1e293b;
+  }
+  
+  .featureDescription {
+    color: #64748b;
+  }
+  
+  .secondaryButton {
+    color: #1e293b;
+    border: 2px solid #6366f1;
+  }
+  
+  .secondaryButton:hover {
+    background-color: rgba(99, 102, 241, 0.1);
+  }
 }

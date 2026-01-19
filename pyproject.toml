@@ -15,7 +15,12 @@ dependencies = [
     "pillow>=11.3.0",
     "pymupdf>=1.26.4",
     "pytesseract>=0.3.13",
-    "torch>=2.8.0",
+    "torch>=2.0.0",
     "torchvision>=0.23.0",
     "transformers>=4.56.2",
 ]
+
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true

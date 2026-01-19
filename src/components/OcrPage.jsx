@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Camera, Upload, History, FileText, Calendar } from "lucide-react";
 import "../styles/OcrPage.css";
 
-const OCRPage = ({ handleFileUpload, setCurrentPage, setOcrResult }) => {
+const OCRPage = ({ handleFileUpload, setOcrResult }) => {
+	const navigate = useNavigate();
 	const [isDragOver, setIsDragOver] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [ocrHistory, setOcrHistory] = useState([]);
@@ -51,13 +53,26 @@ const OCRPage = ({ handleFileUpload, setCurrentPage, setOcrResult }) => {
 						result.data?.ai_analysis?.estimated_reading_time,
 					keyTopics: result.data?.ai_analysis?.key_topics,
 					confidenceScore: result.data?.ai_analysis?.confidence_score,
+					summary:
+						result.summary || result.data?.ai_analysis?.summary,
+					summaryModel:
+						result.summaryModel ||
+						result.data?.ai_analysis?.summary_model,
+					summaryDetails:
+						result.summaryDetails ||
+						result.data?.ai_analysis?.summary_details,
+					summaryTime:
+						result.summaryTime ??
+						result.data?.ai_analysis?.summary_time ??
+						result.data?.processing_metadata?.summary_time ??
+						0,
 					processingMetadata: result.data?.processing_metadata,
 					fileInfo: result.data?.file_info,
 					savedFileName: result.savedFileName, // Important for editing
 				};
 
 				setOcrResult(transformedResult);
-				setCurrentPage("ocr-result");
+				navigate("/ocr-result");
 			} else {
 				console.error("Failed to load OCR result:", result.error);
 				// Could add error state here if needed
