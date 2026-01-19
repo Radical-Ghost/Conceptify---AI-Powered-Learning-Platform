@@ -19,39 +19,39 @@
 
 ### **Advanced OCR Processing**
 
--   **Intelligent Document Routing** - Automatically detects document type (academic/handwritten/standard)
--   **Native PDF Text Extraction** - High-quality text extraction using PyMuPDF
--   **Image OCR with Tesseract** - Process scanned documents and images
--   **Academic Document OCR with Nougat** - Specialized processing for research papers with LaTeX, equations, and tables
--   **Handwriting Recognition with TrOCR** - Transformer-based handwritten text recognition
--   **AI-Powered Summarization** - Automatic document summarization with dynamic length adjustment
--   **Quality Scoring** - Multi-factor quality assessment (completeness, structure, punctuation)
--   **Key Concept Extraction** - Automatic identification of main topics and concepts (up to 10)
--   **NLTK Text Enhancement** - Spell checking, grammar correction, and cleanup
--   **Real-time Editing** - Edit and save OCR results with instant feedback
+- **Intelligent Document Routing** - Automatically detects document type (academic/handwritten/standard)
+- **Native PDF Text Extraction** - High-quality text extraction using PyMuPDF
+- **Image OCR with Tesseract** - Process scanned documents and images
+- **Academic Document OCR with Nougat** - Specialized processing for research papers with LaTeX, equations, and tables
+- **Handwriting Recognition with TrOCR** - Transformer-based handwritten text recognition
+- **AI-Powered Summarization** - Automatic document summarization with dynamic length adjustment
+- **Quality Scoring** - Multi-factor quality assessment (completeness, structure, punctuation)
+- **Key Concept Extraction** - Automatic identification of main topics and concepts (up to 10)
+- **NLTK Text Enhancement** - Spell checking, grammar correction, and cleanup
+- **Real-time Editing** - Edit and save OCR results with instant feedback
 
 ### **Intelligent AI Chatbot**
 
--   **Document-Aware Responses** - Context-aware answers based on uploaded materials
--   **Topic Recognition** - Automatic identification of key concepts and subjects
--   **Interactive Learning** - Ask questions about your study materials
--   **Smart Context Switching** - Seamless transitions between different documents
+- **Document-Aware Responses** - Context-aware answers based on uploaded materials
+- **Topic Recognition** - Automatic identification of key concepts and subjects
+- **Interactive Learning** - Ask questions about your study materials
+- **Smart Context Switching** - Seamless transitions between different documents
 
 ### **Robust Session Management**
 
--   **Server Health Validation** - Automatic session verification and cleanup
--   **Auto-Recovery** - Handles server restarts and connection issues gracefully
--   **Responsive Design** - Works seamlessly across devices
--   **Professional UI/UX** - Clean, modern interface with loading states
+- **Server Health Validation** - Automatic session verification and cleanup
+- **Auto-Recovery** - Handles server restarts and connection issues gracefully
+- **Responsive Design** - Works seamlessly across devices
+- **Professional UI/UX** - Clean, modern interface with loading states
 
 ### **Content Analytics**
 
--   **AI-Powered Summarization** - Generates concise summaries with dynamic length based on content
--   **Reading Time Estimation** - Smart analysis of document complexity
--   **Key Concept Extraction** - Automatic identification of up to 10 main concepts
--   **Key Topics Recognition** - Extracts up to 7 primary topics from content
--   **Quality Scoring** - Multi-factor assessment (completeness, structure, punctuation, word length, concepts)
--   **Structured Data Export** - Clean JSON output for further processing
+- **AI-Powered Summarization** - Generates concise summaries with dynamic length based on content
+- **Reading Time Estimation** - Smart analysis of document complexity
+- **Key Concept Extraction** - Automatic identification of up to 10 main concepts
+- **Key Topics Recognition** - Extracts up to 7 primary topics from content
+- **Quality Scoring** - Multi-factor assessment (completeness, structure, punctuation, word length, concepts)
+- **Structured Data Export** - Clean JSON output for further processing
 
 ---
 
@@ -59,29 +59,29 @@
 
 ### **Frontend**
 
--   **React 18.3.1** - Modern UI framework with hooks and context
--   **CSS3** - Custom styling with responsive design
--   **Vite** - Fast development and build tool
--   **Lucide React** - Beautiful icon library
+- **React 18.3.1** - Modern UI framework with hooks and context
+- **CSS3** - Custom styling with responsive design
+- **Vite** - Fast development and build tool
+- **Lucide React** - Beautiful icon library
 
 ### **Backend**
 
--   **Node.js & Express** - RESTful API server
--   **Python 3.10+** - OCR processing and AI analysis
--   **UV Package Manager** - Fast Python dependency management
+- **Node.js & Express** - RESTful API server
+- **Python 3.10+** - OCR processing and AI analysis
+- **UV Package Manager** - Fast Python dependency management
 
 ### **AI & Processing**
 
--   **Tesseract OCR** - Industry-standard OCR engine for scanned documents
--   **PyMuPDF (Fitz)** - High-quality PDF text extraction
--   **Nougat** - Meta's academic document OCR with LaTeX support
--   **TrOCR** - Microsoft's transformer-based handwriting recognition
--   **LED** - Long document summarization (up to 16k tokens)
--   **BART** - Backup summarization for shorter documents
--   **NLTK** - Natural language processing and text correction
--   **PyTorch with CUDA** - GPU-accelerated AI model inference
--   **OpenCV & Pillow** - Image processing and enhancement
--   **NumPy** - Numerical computing for image analysis
+- **Tesseract OCR** - Industry-standard OCR engine for scanned documents
+- **PyMuPDF (Fitz)** - High-quality PDF text extraction
+- **Nougat** - Meta's academic document OCR with LaTeX support
+- **TrOCR** - Microsoft's transformer-based handwriting recognition
+- **LED** - Long document summarization (up to 16k tokens)
+- **BART** - Backup summarization for shorter documents
+- **NLTK** - Natural language processing and text correction
+- **PyTorch with CUDA** - GPU-accelerated AI model inference
+- **OpenCV & Pillow** - Image processing and enhancement
+- **NumPy** - Numerical computing for image analysis
 
 ---
 
@@ -89,9 +89,9 @@
 
 ### **Prerequisites**
 
--   **Node.js 18+** - [Download here](https://nodejs.org/)
--   **Python 3.10+** - [Download here](https://python.org/) ⚠️ **Check "Add Python to PATH"**
--   **Git** - [Download here](https://git-scm.com/)
+- **Node.js 18+** - [Download here](https://nodejs.org/)
+- **Python 3.10+** - [Download here](https://python.org/) ⚠️ **Check "Add Python to PATH"**
+- **Git** - [Download here](https://git-scm.com/)
 
 ### **Automated Installation (Recommended for Windows)**
 
@@ -237,8 +237,9 @@ npm run dev
 ```
 
 **Access Application:**
--   **Frontend:** http://localhost:5173
--   **Backend API:** http://localhost:5001
+
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:5001
 
 ### **Detailed Instructions**
 
@@ -259,6 +260,7 @@ node src/backend/server.js
 ```
 
 **Expected output:**
+
 ```
 Server running on port 5001
 Python script path: C:\Projects\Conceptify\src\backend\ocr_wrapper.py
@@ -274,6 +276,7 @@ npm run dev
 ```
 
 **Expected output:**
+
 ```
 VITE v5.x.x  ready in xxx ms
 
@@ -284,8 +287,9 @@ VITE v5.x.x  ready in xxx ms
 #### **3. Access Application:**
 
 Open your browser and navigate to:
--   **Frontend:** http://localhost:5173
--   **Backend API:** http://localhost:5001
+
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:5001
 
 </details>
 
@@ -305,29 +309,29 @@ npm run preview
 
 ### **1. Upload Documents**
 
--   Drag & drop PDF files or images
--   Supports: `.pdf`, `.jpg`, `.jpeg`, `.png`, `.bmp`, `.tiff`
--   Real-time processing with progress indicators
+- Drag & drop PDF files or images
+- Supports: `.pdf`, `.jpg`, `.jpeg`, `.png`, `.bmp`, `.tiff`
+- Real-time processing with progress indicators
 
 ### **2. Review OCR Results**
 
--   **Final Extracted Text** - Clean, editable main result
--   **Enhanced Text (NLTK)** - Spell-corrected version
--   **Original OCR Output** - Raw OCR engine output
--   Edit and save changes with instant feedback
+- **Final Extracted Text** - Clean, editable main result
+- **Enhanced Text (NLTK)** - Spell-corrected version
+- **Original OCR Output** - Raw OCR engine output
+- Edit and save changes with instant feedback
 
 ### **3. AI Chat Integration**
 
--   Upload documents to provide context to the AI
--   Ask questions about your study materials
--   Get intelligent, document-aware responses
--   Context indicator shows loaded topics
+- Upload documents to provide context to the AI
+- Ask questions about your study materials
+- Get intelligent, document-aware responses
+- Context indicator shows loaded topics
 
 ### **4. Session Management**
 
--   Automatic login persistence
--   Server health validation
--   Graceful error handling and recovery
+- Automatic login persistence
+- Server health validation
+- Graceful error handling and recovery
 
 ---
 
@@ -338,18 +342,21 @@ npm run preview
 Conceptify uses advanced AI models for enhanced document processing:
 
 #### **Automatic Setup**
+
 Most models download automatically on first use. The setup script (`SETUP_COMPLETE.ps1`) can pre-download them:
 
--   **Nougat** (1.5GB) - Academic PDF processing with LaTeX support
--   **TrOCR** (556MB) - Handwriting recognition
--   **LED** (1.6GB) - Long document summarization
--   **BART** (1.6GB) - Backup summarization model
+- **Nougat** (1.5GB) - Academic PDF processing with LaTeX support
+- **TrOCR** (556MB) - Handwriting recognition
+- **LED** (1.6GB) - Long document summarization
+- **BART** (1.6GB) - Backup summarization model
 
 #### **GPU Acceleration**
+
 For NVIDIA GPU users, PyTorch with CUDA 12.1 enables:
--   10-50x faster summarization
--   Real-time document processing
--   Advanced model inference
+
+- 10-50x faster summarization
+- Real-time document processing
+- Advanced model inference
 
 Check GPU status: `python src/backend/gpu_check.py`
 
@@ -374,12 +381,12 @@ FRONTEND_URL=http://localhost:5173
 
 Key packages (automatically installed with `uv sync`):
 
--   `opencv-python` - Image processing
--   `pytesseract` - OCR engine interface
--   `pymupdf` - PDF processing
--   `nltk` - Natural language processing
--   `pillow` - Image manipulation
--   `numpy` - Numerical computing
+- `opencv-python` - Image processing
+- `pytesseract` - OCR engine interface
+- `pymupdf` - PDF processing
+- `nltk` - Natural language processing
+- `pillow` - Image manipulation
+- `numpy` - Numerical computing
 
 ---
 
@@ -388,12 +395,14 @@ Key packages (automatically installed with `uv sync`):
 ### **Installation Issues**
 
 **Setup script fails:**
+
 ```powershell
 # Try manual installation steps in SETUP_ADVANCED_OCR.md
 # Or check individual component installations below
 ```
 
 **UV installation fails:**
+
 ```bash
 # Use pip instead of UV
 python -m pip install -r requirements.txt
@@ -412,6 +421,7 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 ```
 
 **Poppler not found (Nougat won't work):**
+
 ```bash
 # Windows: Download from https://github.com/oschwartz10612/poppler-windows/releases
 # Extract and add bin folder to PATH
@@ -422,6 +432,7 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 ```
 
 **GPU not detected:**
+
 ```bash
 # Verify GPU
 python src/backend/gpu_check.py
@@ -432,6 +443,7 @@ uv pip install torch torchvision torchaudio --index-url https://download.pytorch
 ```
 
 **AI models not downloading:**
+
 ```bash
 # Check internet connection
 # Models download automatically on first use
@@ -444,6 +456,7 @@ uv pip install torch torchvision torchaudio --index-url https://download.pytorch
 ```
 
 **Summarization fails:**
+
 ```bash
 # Check GPU: python src/backend/gpu_check.py
 # Fallback to CPU (slower): The system automatically uses extractive summarization
@@ -476,10 +489,10 @@ npx kill-port 5001 5173
 
 ## 📚 Documentation
 
--   **[SETUP_COMPLETE.ps1](SETUP_COMPLETE.ps1)** - Automated installation script
--   **[SETUP_ADVANCED_OCR.md](SETUP_ADVANCED_OCR.md)** - Detailed setup guide with troubleshooting
--   **[QUICKSTART_OCR.md](QUICKSTART_OCR.md)** - Quick reference for OCR features
--   **[DISTRIBUTION_GUIDE.md](DISTRIBUTION_GUIDE.md)** - How to share project with teammates
+- **[SETUP_COMPLETE.ps1](SETUP_COMPLETE.ps1)** - Automated installation script
+- **[SETUP_ADVANCED_OCR.md](SETUP_ADVANCED_OCR.md)** - Detailed setup guide with troubleshooting
+- **[QUICKSTART_OCR.md](QUICKSTART_OCR.md)** - Quick reference for OCR features
+- **[DISTRIBUTION_GUIDE.md](DISTRIBUTION_GUIDE.md)** - How to share project with teammates
 
 ---
 
