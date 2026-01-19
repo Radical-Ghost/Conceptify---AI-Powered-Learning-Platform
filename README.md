@@ -19,10 +19,15 @@
 
 ### **Advanced OCR Processing**
 
+-   **Intelligent Document Routing** - Automatically detects document type (academic/handwritten/standard)
 -   **Native PDF Text Extraction** - High-quality text extraction using PyMuPDF
 -   **Image OCR with Tesseract** - Process scanned documents and images
+-   **Academic Document OCR with Nougat** - Specialized processing for research papers with LaTeX, equations, and tables
+-   **Handwriting Recognition with TrOCR** - Transformer-based handwritten text recognition
+-   **AI-Powered Summarization** - Automatic document summarization with dynamic length adjustment
+-   **Quality Scoring** - Multi-factor quality assessment (completeness, structure, punctuation)
+-   **Key Concept Extraction** - Automatic identification of main topics and concepts (up to 10)
 -   **NLTK Text Enhancement** - Spell checking, grammar correction, and cleanup
--   **AI Content Analysis** - Automatic concept extraction and difficulty assessment
 -   **Real-time Editing** - Edit and save OCR results with instant feedback
 
 ### **Intelligent AI Chatbot**
@@ -41,10 +46,12 @@
 
 ### **Content Analytics**
 
+-   **AI-Powered Summarization** - Generates concise summaries with dynamic length based on content
 -   **Reading Time Estimation** - Smart analysis of document complexity
--   **Concept Extraction** - Automatic identification of key topics
+-   **Key Concept Extraction** - Automatic identification of up to 10 main concepts
+-   **Key Topics Recognition** - Extracts up to 7 primary topics from content
+-   **Quality Scoring** - Multi-factor assessment (completeness, structure, punctuation, word length, concepts)
 -   **Structured Data Export** - Clean JSON output for further processing
--   **Confidence Scoring** - Quality assessment of OCR results
 
 ---
 
@@ -65,9 +72,14 @@
 
 ### **AI & Processing**
 
--   **Tesseract OCR** - Industry-standard OCR engine
--   **PyMuPDF (Fitz)** - PDF text extraction and processing
+-   **Tesseract OCR** - Industry-standard OCR engine for scanned documents
+-   **PyMuPDF (Fitz)** - High-quality PDF text extraction
+-   **Nougat** - Meta's academic document OCR with LaTeX support
+-   **TrOCR** - Microsoft's transformer-based handwriting recognition
+-   **LED** - Long document summarization (up to 16k tokens)
+-   **BART** - Backup summarization for shorter documents
 -   **NLTK** - Natural language processing and text correction
+-   **PyTorch with CUDA** - GPU-accelerated AI model inference
 -   **OpenCV & Pillow** - Image processing and enhancement
 -   **NumPy** - Numerical computing for image analysis
 
@@ -78,17 +90,48 @@
 ### **Prerequisites**
 
 -   **Node.js 18+** - [Download here](https://nodejs.org/)
--   **Python 3.10+** - [Download here](https://python.org/)
+-   **Python 3.10+** - [Download here](https://python.org/) ⚠️ **Check "Add Python to PATH"**
 -   **Git** - [Download here](https://git-scm.com/)
 
-### **1. Clone Repository**
+### **Automated Installation (Recommended for Windows)**
 
-```bash
-git clone https://github.com/Radical-Ghost/Conceptify---AI-Powered-Learning-Platform.git
-cd "Conceptify - AI-Powered Learning Platform"
+```powershell
+# 1. Clone the repository
+git clone https://github.com/Radical-Ghost/Conceptify.git
+cd Conceptify
+
+# 2. Run the automated setup script
+.\SETUP_COMPLETE.ps1
+
+# 3. Follow the interactive prompts
+# The script will:
+#   ✅ Install UV package manager
+#   ✅ Create Python virtual environment
+#   ✅ Install all Python dependencies
+#   ✅ Install all Node.js dependencies
+#   ✅ Set up Poppler (for advanced OCR)
+#   ✅ Install PyTorch with GPU support
+#   ✅ Download NLTK data
+#   ✅ Pre-download AI models (optional)
+#   ✅ Run installation tests
+
+# Total installation time: 20-30 minutes
+# Total download size: 6-8 GB (including AI models)
 ```
 
-### **2. Python Backend Setup**
+### **Manual Installation**
+
+<details>
+<summary>Click to expand manual setup instructions</summary>
+
+#### **1. Clone Repository**
+
+```bash
+git clone https://github.com/Radical-Ghost/Conceptify.git
+cd Conceptify
+```
+
+#### **2. Python Backend Setup**
 
 ```bash
 # Install UV package manager (if not installed)
@@ -107,80 +150,144 @@ source .venv/bin/activate
 uv sync
 ```
 
-### **3. Node.js Frontend Setup**
+#### **3. Node.js Frontend Setup**
 
 ```bash
 # Install Node.js dependencies
 npm install
-
-# Install additional dependencies if needed
-npm install lucide-react
 ```
 
-### **4. Install System Dependencies**
+#### **4. Install System Dependencies**
 
-#### **Windows:**
+##### **Windows:**
 
 ```bash
 # Install Tesseract OCR
 # Download from: https://github.com/UB-Mannheim/tesseract/wiki
 # Add to PATH: C:\Program Files\Tesseract-OCR
 
-# Verify installation
+# Install Poppler (for advanced OCR)
+# Download from: https://github.com/oschwartz10612/poppler-windows/releases
+# Extract and add bin folder to PATH
+
+# Verify installations
 tesseract --version
 ```
 
-#### **macOS:**
+##### **macOS:**
 
 ```bash
-# Install Tesseract via Homebrew
-brew install tesseract
+# Install Tesseract and Poppler via Homebrew
+brew install tesseract poppler
 
-# Verify installation
+# Verify installations
 tesseract --version
 ```
 
-#### **Linux (Ubuntu/Debian):**
+##### **Linux (Ubuntu/Debian):**
 
 ```bash
 # Install Tesseract and dependencies
 sudo apt update
-sudo apt install tesseract-ocr tesseract-ocr-eng
+sudo apt install tesseract-ocr tesseract-ocr-eng poppler-utils
 sudo apt install python3-opencv
 
 # Verify installation
 tesseract --version
 ```
 
+#### **5. GPU Support (Optional)**
+
+```bash
+# Install PyTorch with CUDA support (NVIDIA GPU only)
+# Activate virtual environment first
+.venv\Scripts\activate
+
+# Install PyTorch with CUDA 12.1
+uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Verify GPU
+python src/backend/gpu_check.py
+```
+
+#### **6. Download NLTK Data**
+
+```bash
+# Activate virtual environment
+.venv\Scripts\activate
+
+# Download NLTK data
+python -c "import nltk; nltk.download('punkt'); nltk.download('words'); nltk.download('averaged_perceptron_tagger'); nltk.download('brown'); nltk.download('stopwords')"
+```
+
+</details>
+
 ---
 
 ## 🚀 Running the Application
 
-### **Development Mode**
+### **Quick Start**
 
-1. **Start Python Backend:**
+```powershell
+# Terminal 1 - Start Backend (keep this running)
+node src\backend\server.js
 
-```bash
-# Activate virtual environment
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # macOS/Linux
-
-# Start the OCR processing server
-cd src/backend
-node server.js
-```
-
-2. **Start React Frontend:**
-
-```bash
-# In a new terminal
+# Terminal 2 - Start Frontend (in a new terminal)
 npm run dev
 ```
 
-3. **Access Application:**
-
+**Access Application:**
 -   **Frontend:** http://localhost:5173
 -   **Backend API:** http://localhost:5001
+
+### **Detailed Instructions**
+
+<details>
+<summary>Click for detailed startup guide</summary>
+
+#### **1. Start Python Backend:**
+
+```bash
+# Activate virtual environment (if not already activated)
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+
+# Start the OCR processing server
+node src/backend/server.js
+```
+
+**Expected output:**
+```
+Server running on port 5001
+Python script path: C:\Projects\Conceptify\src\backend\ocr_wrapper.py
+✓ CUDA available: True
+✓ GPU: NVIDIA GeForce RTX 3050
+```
+
+#### **2. Start React Frontend:**
+
+```bash
+# In a new terminal (no need to activate venv)
+npm run dev
+```
+
+**Expected output:**
+```
+VITE v5.x.x  ready in xxx ms
+
+➜  Local:   http://localhost:5173/
+➜  Network: use --host to expose
+```
+
+#### **3. Access Application:**
+
+Open your browser and navigate to:
+-   **Frontend:** http://localhost:5173
+-   **Backend API:** http://localhost:5001
+
+</details>
 
 ### **Production Build**
 
@@ -226,9 +333,29 @@ npm run preview
 
 ## 🔧 Configuration
 
+### **AI Models & Advanced Features**
+
+Conceptify uses advanced AI models for enhanced document processing:
+
+#### **Automatic Setup**
+Most models download automatically on first use. The setup script (`SETUP_COMPLETE.ps1`) can pre-download them:
+
+-   **Nougat** (1.5GB) - Academic PDF processing with LaTeX support
+-   **TrOCR** (556MB) - Handwriting recognition
+-   **LED** (1.6GB) - Long document summarization
+-   **BART** (1.6GB) - Backup summarization model
+
+#### **GPU Acceleration**
+For NVIDIA GPU users, PyTorch with CUDA 12.1 enables:
+-   10-50x faster summarization
+-   Real-time document processing
+-   Advanced model inference
+
+Check GPU status: `python src/backend/gpu_check.py`
+
 ### **Environment Variables**
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory (optional):
 
 ```env
 # Server Configuration
@@ -258,7 +385,21 @@ Key packages (automatically installed with `uv sync`):
 
 ## 🆘 Troubleshooting
 
-### **Common Issues:**
+### **Installation Issues**
+
+**Setup script fails:**
+```powershell
+# Try manual installation steps in SETUP_ADVANCED_OCR.md
+# Or check individual component installations below
+```
+
+**UV installation fails:**
+```bash
+# Use pip instead of UV
+python -m pip install -r requirements.txt
+```
+
+### **Runtime Issues**
 
 **Tesseract not found:**
 
@@ -268,6 +409,45 @@ tesseract --version
 
 # Windows: Add to PATH or set TESSERACT_CMD in ocr_wrapper.py
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+```
+
+**Poppler not found (Nougat won't work):**
+```bash
+# Windows: Download from https://github.com/oschwartz10612/poppler-windows/releases
+# Extract and add bin folder to PATH
+# Or specify in ocr_wrapper.py: pdf2image.convert_from_path(..., poppler_path=r'C:\path\to\poppler\bin')
+
+# macOS: brew install poppler
+# Linux: sudo apt install poppler-utils
+```
+
+**GPU not detected:**
+```bash
+# Verify GPU
+python src/backend/gpu_check.py
+
+# Reinstall PyTorch with CUDA
+# Activate venv first: .venv\Scripts\activate
+uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
+
+**AI models not downloading:**
+```bash
+# Check internet connection
+# Models download automatically on first use
+# Or pre-download: python src/backend/test_models.py
+
+# If download fails, try manual download:
+# Nougat: https://huggingface.co/facebook/nougat-base
+# TrOCR: https://huggingface.co/microsoft/trocr-base-handwritten
+# LED: https://huggingface.co/pszemraj/led-large-book-summary
+```
+
+**Summarization fails:**
+```bash
+# Check GPU: python src/backend/gpu_check.py
+# Fallback to CPU (slower): The system automatically uses extractive summarization
+# Test: python src/backend/test_summarization.py
 ```
 
 **Python dependencies fail:**
@@ -292,8 +472,19 @@ netstat -an | grep :5173  # Frontend
 npx kill-port 5001 5173
 ```
 
+---
+
+## 📚 Documentation
+
+-   **[SETUP_COMPLETE.ps1](SETUP_COMPLETE.ps1)** - Automated installation script
+-   **[SETUP_ADVANCED_OCR.md](SETUP_ADVANCED_OCR.md)** - Detailed setup guide with troubleshooting
+-   **[QUICKSTART_OCR.md](QUICKSTART_OCR.md)** - Quick reference for OCR features
+-   **[DISTRIBUTION_GUIDE.md](DISTRIBUTION_GUIDE.md)** - How to share project with teammates
+
+---
+
 <div align="center">
 
-[⭐ Star this repo](https://github.com/Radical-Ghost/Conceptify---AI-Powered-Learning-Platform) • [Report Bug](https://github.com/Radical-Ghost/Conceptify---AI-Powered-Learning-Platform/issues) • [Request Feature](https://github.com/Radical-Ghost/Conceptify---AI-Powered-Learning-Platform/issues)
+[⭐ Star this repo](https://github.com/Radical-Ghost/Conceptify) • [Report Bug](https://github.com/Radical-Ghost/Conceptify/issues) • [Request Feature](https://github.com/Radical-Ghost/Conceptify/issues)
 
 </div>
