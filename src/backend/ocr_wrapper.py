@@ -55,14 +55,17 @@ import numpy as np
 from PIL import Image, ImageEnhance
 import nltk
 import torch
-from transformers import pipeline
+import requests
 DEPS_AVAILABLE = True
+
+# Ollama API configuration for Mistral 7B
+OLLAMA_URL = "http://localhost:11434/api/generate"
+MISTRAL_MODEL = "mistral:7b"
 class OCRPipeline:
     def __init__(self):
         self.setup_nltk()
         self.english_words, self.word_freq, self.stop_words = self.create_dict()
-        self.summarizer = None
-        self.setup_summarizer()
+        self.ollama_available = self.check_ollama_connection()
         # Advanced OCR models
         self.nougat_model = None
         self.nougat_processor = None
@@ -70,68 +73,23 @@ class OCRPipeline:
         self.trocr_processor = None
         self.setup_advanced_ocr()
 
-    def setup_summarizer(self):
-        """Initialise BART-Large summarizer if dependencies are available"""
+    def check_ollama_connection(self):
+        """Check if Ollama is running and Mistral 7B is available"""
         try:
-            # Check GPU availability
-            use_gpu = torch.cuda.is_available()
-            device = 0 if use_gpu else -1
-            
-            # Print GPU info for debugging (to stderr to avoid corrupting JSON output)
-            if use_gpu:
-                print(f"🎮 GPU Detected: {torch.cuda.get_device_name(0)}", file=sys.stderr)
-                print(f"💾 GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.2f} GB", file=sys.stderr)
-                print(f"⚡ CUDA Version: {torch.version.cuda}", file=sys.stderr)
-            else:
-                print("⚠️  No GPU detected - using CPU (this will be slower)", file=sys.stderr)
-            
-            # Try LED first (better for documents), fallback to BART
-            try:
-                print("📥 Loading LED model (better for documents)...", file=sys.stderr)
-                self.summarizer = pipeline(
-                    "summarization",
-                    model="pszemraj/led-large-book-summary",
-                    device=device,
-                    torch_dtype=torch.float16 if use_gpu else torch.float32,
-                )
-                self.summarizer_model_name = "pszemraj/led-large-book-summary"
-                print("✅ LED model loaded successfully", file=sys.stderr)
-            except Exception as e:
-                print(f"⚠️  LED not available ({e}), using BART...", file=sys.stderr)
-                self.summarizer = pipeline(
-                    "summarization",
-                    model="facebook/bart-large-cnn",
-                    device=device,
-                    torch_dtype=torch.float16 if use_gpu else torch.float32,
-                )
-                self.summarizer_model_name = "facebook/bart-large-cnn"
-            
-            # Increased word limits for better coverage with dynamic sizing
-            # Dynamic summary length based on input text
-            # 500 words -> 100, 1000 -> 140, 2000 -> 250, 3000+ -> 400
-            self.summarizer_max_words = 1200 if use_gpu else 600
-            self.summarizer_max_chunks = 4 if use_gpu else 2
-            self.summarizer_batch_size = 4 if use_gpu else 1
-            self.summarizer_trim_words = 3500 if use_gpu else 1800
-            # Longer summaries for more comprehensive output
-            self.summarizer_max_length = 300 if use_gpu else 200
-            self.summarizer_min_length = 120 if use_gpu else 80
-            self.summarizer_allow_refine = use_gpu
-            self.summarizer_strategy = "gpu" if use_gpu else "cpu"
-            
-            print(f"✅ BART model loaded on: {'GPU' if use_gpu else 'CPU'}", file=sys.stderr)
-            
+            response = requests.get("http://localhost:11434/api/tags", timeout=2)
+            if response.status_code == 200:
+                models = response.json().get('models', [])
+                model_names = [m['name'] for m in models]
+                if any('mistral' in m for m in model_names):
+                    print("✅ Mistral 7B available via Ollama", file=sys.stderr)
+                    return True
+                else:
+                    print("⚠️  Mistral 7B not found. Run: ollama pull mistral:7b", file=sys.stderr)
+                    return False
         except Exception as e:
-            print(f"❌ Error loading BART model: {e}", file=sys.stderr)
-            self.summarizer = None
-            self.summarizer_max_words = 0
-            self.summarizer_max_chunks = 0
-            self.summarizer_batch_size = 1
-            self.summarizer_trim_words = 0
-            self.summarizer_max_length = 0
-            self.summarizer_min_length = 0
-            self.summarizer_allow_refine = False
-            self.summarizer_strategy = "unavailable"
+            print(f"⚠️  Ollama not running: {e}", file=sys.stderr)
+            print("   Start Ollama and run: ollama pull mistral:7b", file=sys.stderr)
+            return False
     
     def setup_advanced_ocr(self):
         """Setup Nougat and TrOCR models for academic/handwritten documents"""
@@ -519,136 +477,67 @@ class OCRPipeline:
         return text.strip()
     
     def summarize_text(self, text):
-        """Summarize extracted text with BART-Large"""
+        """Summarize extracted text using Mistral 7B via Ollama"""
         self.last_summary_details = {
             "generated": False,
-            "strategy": getattr(self, "summarizer_strategy", "unknown"),
+            "strategy": "mistral_ollama",
             "reason": "",
-            "chunks": 0,
-            "trimmed": False,
-            "trimmed_words": 0,
             "duration": 0.0,
         }
 
-        if not self.summarizer:
-            self.last_summary_details["reason"] = "summarizer_unavailable"
+        if not self.ollama_available:
+            self.last_summary_details["reason"] = "ollama_unavailable"
             return ""
 
         if not text or len(text.strip()) < 80:
             self.last_summary_details["reason"] = "not_enough_text"
             return ""
         
-        # Clean text to prevent tokenization errors
         text = self.clean_text_for_summarization(text)
-
         start_time = time.perf_counter()
-
-        words_tokens = text.split()
-        total_words_original = len(words_tokens)
-        trimmed_words_removed = 0
-        trim_words = getattr(self, "summarizer_trim_words", 0)
-        if trim_words and total_words_original > trim_words:
-            text = " ".join(words_tokens[:trim_words])
-            trimmed_words_removed = total_words_original - trim_words
-            self.last_summary_details["trimmed"] = True
-            self.last_summary_details["trimmed_words"] = trimmed_words_removed
-
-        sentences = re.split(r'(?<=[.!?]) +', text)
-        chunks = []
-        current_chunk = []
-        current_word_count = 0
-        max_words = self.summarizer_max_words or 900
-
-        for sentence in sentences:
-            words_in_sentence = sentence.split()
-            if not words_in_sentence:
-                continue
-
-            if current_word_count + len(words_in_sentence) <= max_words:
-                current_chunk.append(sentence)
-                current_word_count += len(words_in_sentence)
-            else:
-                if current_chunk:
-                    chunks.append(" ".join(current_chunk))
-                current_chunk = [sentence]
-                current_word_count = len(words_in_sentence)
-
-        if current_chunk:
-            chunks.append(" ".join(current_chunk))
-
-        max_chunks = getattr(self, "summarizer_max_chunks", 3) or 3
-        chunks = chunks[:max_chunks]
-        chunk_count = len(chunks)
-        self.last_summary_details["chunks"] = chunk_count
-
-        if not chunks:
-            self.last_summary_details["reason"] = "no_chunks_available"
-            self.last_summary_details["duration"] = round(time.perf_counter() - start_time, 3)
-            return ""
-        
-        # Calculate dynamic summary length based on input text
         total_words = len(text.split())
-        max_length, min_length = self.calculate_summary_length(total_words)
-        print(f"\ud83d\udcca Dynamic summary length: {min_length}-{max_length} words (input: {total_words} words)", file=sys.stderr)
+        target_words = self.calculate_target_summary_words(total_words)
+        print(f"📊 Summarizing {total_words} words -> target: ~{target_words} words", file=sys.stderr)
+
+        max_input_words = 3000
+        if total_words > max_input_words:
+            text = " ".join(text.split()[:max_input_words])
+            print(f"✂️  Trimmed to {max_input_words} words", file=sys.stderr)
+
+        prompt = f"""You are an expert summarizer. Provide a comprehensive single-paragraph summary of the following text in approximately {target_words} words. Cover all important points, key concepts, and main ideas. Write directly - do not start with phrases like "The document" or "This text". Do not add conclusions or final thoughts.
+
+{text}"""
 
         try:
-            generation_kwargs = {
-                "max_length": max_length,
-                "min_length": min_length,
-                "do_sample": False,
-                "truncation": True,
-                "max_new_tokens": 250,  # Limit output tokens
-                # Better summary quality settings
-                "num_beams": 4,  # Beam search for better quality
-                "length_penalty": 1.0,  # Neutral length preference
-                "early_stopping": True,
-            }
-
-            if chunk_count > 1:
-                generation_kwargs["batch_size"] = self.summarizer_batch_size or 1
-
-            # Try GPU first, fallback to CPU on error
-            try:
-                results = self.summarizer(
-                    chunks if chunk_count > 1 else chunks[0],
-                    **generation_kwargs,
-                )
-            except RuntimeError as gpu_error:
-                # GPU error - use simple extractive summary instead
-                print(f"⚠️  Model summarization failed: {str(gpu_error)[:100]}", file=sys.stderr)
-                print(f"📝 Using extractive summary fallback...", file=sys.stderr)
-                
-                # Simple extractive summary - take first few sentences
-                from nltk.tokenize import sent_tokenize
-                try:
-                    sentences = sent_tokenize(text)
-                    # Take first 5 sentences or 200 words, whichever is less
-                    summary_sentences = []
-                    word_count = 0
-                    for sent in sentences[:10]:
-                        words_in_sent = len(sent.split())
-                        if word_count + words_in_sent > 200:
-                            break
-                        summary_sentences.append(sent)
-                        word_count += words_in_sent
-                    
-                    extractive_summary = ' '.join(summary_sentences)
-                    if extractive_summary:
-                        results = [{'summary_text': extractive_summary}]
-                        print(f"✅ Extractive summary created: {len(extractive_summary.split())} words", file=sys.stderr)
-                    else:
-                        raise gpu_error
-                except Exception:
-                    raise gpu_error  # Raise original error if extractive also fails
-
-            if isinstance(results, dict):
-                results = [results]
-
-            summaries = [
-                res.get("summary_text", "").strip()
-                for res in results
-                if isinstance(res, dict) and res.get("summary_text")
-            ]
+            response = requests.post(OLLAMA_URL, json={
+                "model": MISTRAL_MODEL,
+                "prompt": prompt,
+                "stream": False,
+                "options": {"temperature": 0.5, "top_p": 0.9}
+            }, timeout=120)
+            
+            if response.status_code == 200:
+                result = response.json()
+                summary = result.get('response', '').strip()
+                if summary:
+                    duration = round(time.perf_counter() - start_time, 3)
+                    self.last_summary_details.update({
+                        "generated": True,
+                        "reason": "",
+                        "duration": duration,
+                        "original_words": total_words,
+                        "summary_words": len(summary.split()),
+                        "model": "mistral:7b"
+                    })
+                    print(f"✅ Summary generated: {len(summary.split())} words in {duration}s", file=sys.stderr)
+                    return summary
+                else:
+                    self.last_summary_details["reason"] = "empty_response"
+                    return ""
+            else:
+                print(f"❌ Ollama error: {response.status_code}", file=sys.stderr)
+                self.last_summary_details["reason"] = f"ollama_error_{response.status_code}"
+                return ""
         except Exception as exc:
             error_msg = f"generation_error:{type(exc).__name__}"
             print(f"❌ Summary generation failed: {type(exc).__name__}", file=sys.stderr)
@@ -657,43 +546,81 @@ class OCRPipeline:
             self.last_summary_details["duration"] = round(time.perf_counter() - start_time, 3)
             self.last_summary_details["error_detail"] = str(exc)[:500]
             return ""
-
-        if not summaries:
-            self.last_summary_details["reason"] = "empty_summary"
-            self.last_summary_details["duration"] = round(time.perf_counter() - start_time, 3)
-            return ""
-
-        combined_summary = " ".join(summaries)
-
-        if len(summaries) > 1 and getattr(self, "summarizer_allow_refine", False):
-            try:
-                refine_kwargs = generation_kwargs.copy()
-                refine_kwargs.pop("batch_size", None)
-                # Slightly longer for final refined summary
-                refine_kwargs["max_length"] = min(350, (self.summarizer_max_length or 300) + 50)
-                refine_kwargs["min_length"] = max(150, (self.summarizer_min_length or 120) + 30)
-                refined = self.summarizer(
-                    combined_summary,
-                    **refine_kwargs,
-                )
-                if isinstance(refined, list) and refined:
-                    combined_summary = refined[0].get("summary_text", combined_summary).strip()
-                elif isinstance(refined, dict):
-                    combined_summary = refined.get("summary_text", combined_summary).strip()
-            except Exception:
-                pass
-
-        duration = round(time.perf_counter() - start_time, 3)
-        self.last_summary_details.update({
-            "generated": True,
-            "reason": "",
-            "duration": duration,
-            "original_words": total_words_original,
-            "summary_words": len(combined_summary.split()),
-        })
-
-        return combined_summary.strip()
     
+    def calculate_target_summary_words(self, input_words):
+        """Calculate target summary length based on input"""
+        if input_words <= 500:
+            return 80
+        elif input_words <= 1000:
+            return 120
+        elif input_words <= 2000:
+            return 200
+        elif input_words <= 3000:
+            return 300
+        else:
+            return 400
+    
+    def enhance_text_with_ai(self, text):
+        """Use Mistral to semantically clean OCR text - remove artifacts, watermarks, duplicates while preserving structure"""
+        if not self.ollama_available:
+            print("⚠️  Ollama unavailable, skipping AI enhancement", file=sys.stderr)
+            return text
+        
+        if not text or len(text.strip()) < 50:
+            return text
+        
+        start_time = time.perf_counter()
+        total_words = len(text.split())
+        print(f"🔧 AI Enhancement starting: {total_words} words", file=sys.stderr)
+        
+        # For very long text, process in chunks
+        max_input_words = 4000
+        if total_words > max_input_words:
+            text = " ".join(text.split()[:max_input_words])
+            print(f"✂️  Trimmed to {max_input_words} words for enhancement", file=sys.stderr)
+        
+        prompt = f"""You are an expert text restoration specialist. Your task is to clean and restore OCR-extracted text by removing artifacts while preserving the original content and structure.
+
+INSTRUCTIONS:
+- Remove watermarks, repeated junk text, page numbers, headers/footers that don't belong to the main content
+- Remove OCR artifacts like random characters, broken formatting, duplicate lines
+- Fix broken words and spacing issues
+- Restore what the OCR intended to capture
+- DO NOT summarize, rewrite, or change the meaning
+- DO NOT change the order of sentences or paragraphs
+- DO NOT add new information
+- Keep all important content, just clean up the noise
+
+Input text:
+{text}
+
+Cleaned text:"""
+
+        try:
+            response = requests.post(OLLAMA_URL, json={
+                "model": MISTRAL_MODEL,
+                "prompt": prompt,
+                "stream": False,
+                "options": {"temperature": 0.3, "top_p": 0.9}
+            }, timeout=180)
+            
+            if response.status_code == 200:
+                result = response.json()
+                enhanced = result.get('response', '').strip()
+                if enhanced:
+                    duration = round(time.perf_counter() - start_time, 3)
+                    print(f"✅ AI Enhancement complete: {len(enhanced.split())} words in {duration}s", file=sys.stderr)
+                    return enhanced
+                else:
+                    print(f"⚠️  Empty AI enhancement response, returning original", file=sys.stderr)
+                    return text
+            else:
+                print(f"❌ Ollama enhancement error: {response.status_code}", file=sys.stderr)
+                return text
+        except Exception as exc:
+            print(f"❌ AI Enhancement failed: {type(exc).__name__}", file=sys.stderr)
+            return text
+
     def detect_document_type(self, pdf_path):
         """Detect if PDF is academic/mathematical, handwritten, or standard"""
         try:
@@ -819,14 +746,18 @@ class OCRPipeline:
             print(f"\n🤖 AI ANALYSIS STARTING", file=sys.stderr)
             print(f"{'='*60}", file=sys.stderr)
             
+            # Generate AI enhanced text (semantic cleaning)
+            ai_enhanced_text = self.enhance_text_with_ai(all_text)
+            
+            # Generate summary
             summary_text = self.summarize_text(all_text)
             summary_details = getattr(self, "last_summary_details", {})
             
             if summary_text:
                 analysis["summary"] = summary_text
-                analysis["summary_model"] = getattr(self, "summarizer_model_name", "facebook/bart-large-cnn")
+                analysis["summary_model"] = "mistral:7b"
                 print(f"✅ Summary generated: {len(summary_text.split())} words", file=sys.stderr)
-                print(f"📊 Model: {analysis['summary_model']} ({summary_details.get('strategy', 'unknown').upper()})", file=sys.stderr)
+                print(f"📊 Model: Mistral 7B ({summary_details.get('strategy', 'unknown').upper()})", file=sys.stderr)
             else:
                 print(f"⚠️  No summary generated: {summary_details.get('reason', 'unknown')}", file=sys.stderr)
             if summary_details:
@@ -845,6 +776,7 @@ class OCRPipeline:
                     "raw_text": result['raw_text'],
                     "corrected_text": result['corrected_text'],
                     "extracted_text": all_text,
+                    "ai_enhanced_text": ai_enhanced_text,
                     "pages_processed": result['pages_processed'],
                     "images_processed": result['images_processed']
                 },
@@ -1076,6 +1008,7 @@ def main():
             extracted_text = result.get('extraction_results', {}).get('extracted_text', '')
             raw_text = result.get('extraction_results', {}).get('raw_text', '')
             corrected_text = result.get('extraction_results', {}).get('corrected_text', '')
+            ai_enhanced_text = result.get('extraction_results', {}).get('ai_enhanced_text', '')
             ai_analysis = result.get('ai_analysis', {})
             
             response = {
@@ -1083,6 +1016,7 @@ def main():
                 'finalExtractedText': extracted_text,
                 'originalOcrOutput': raw_text,
                 'enhancedTextNltk': corrected_text,
+                'aiEnhancedText': ai_enhanced_text,
                 'wordCount': ai_analysis.get('word_count', len(extracted_text.split())),
                 'readingTime': ai_analysis.get('estimated_reading_time', max(1, len(extracted_text.split()) // 200)),
                 'qualityScore': ai_analysis.get('quality_score', ai_analysis.get('confidence_score', 0.85)),  # Use new quality_score, fallback to old confidence

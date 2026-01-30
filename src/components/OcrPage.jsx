@@ -6,7 +6,10 @@ import "../styles/OcrPage.css";
 const OCRPage = ({ handleFileUpload, setOcrResult }) => {
 	const navigate = useNavigate();
 	const [isDragOver, setIsDragOver] = useState(false);
-	const [isProcessing, setIsProcessing] = useState(false);
+	const [isProcessing, setIsProcessing] = useState(() => {
+		// Load processing state from localStorage on mount
+		return localStorage.getItem("ocr_processing") === "true";
+	});
 	const [ocrHistory, setOcrHistory] = useState([]);
 	const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
@@ -15,10 +18,19 @@ const OCRPage = ({ handleFileUpload, setOcrResult }) => {
 		fetchOcrHistory();
 	}, []);
 
+	// Save processing state to localStorage whenever it changes
+	useEffect(() => {
+		if (isProcessing) {
+			localStorage.setItem("ocr_processing", "true");
+		} else {
+			localStorage.removeItem("ocr_processing");
+		}
+	}, [isProcessing]);
+
 	const fetchOcrHistory = async () => {
 		try {
 			const response = await fetch(
-				"http://localhost:5001/api/ocr/results"
+				"http://localhost:5001/api/ocr/results",
 			);
 			const data = await response.json();
 			setOcrHistory(data.results || []);
@@ -33,7 +45,7 @@ const OCRPage = ({ handleFileUpload, setOcrResult }) => {
 		try {
 			// Fetch the full OCR result by filename
 			const response = await fetch(
-				`http://localhost:5001/api/ocr/result/${historyItem.filename}`
+				`http://localhost:5001/api/ocr/result/${historyItem.filename}`,
 			);
 			const result = await response.json();
 
@@ -46,6 +58,8 @@ const OCRPage = ({ handleFileUpload, setOcrResult }) => {
 					rawText: result.data?.extraction_results?.raw_text,
 					correctedText:
 						result.data?.extraction_results?.corrected_text,
+					aiEnhancedText:
+						result.data?.extraction_results?.ai_enhanced_text,
 					concepts: result.data?.ai_analysis?.concepts,
 					difficulty: result.data?.ai_analysis?.difficulty,
 					wordCount: result.data?.ai_analysis?.word_count,
@@ -92,22 +106,36 @@ const OCRPage = ({ handleFileUpload, setOcrResult }) => {
 		setIsDragOver(false);
 	};
 
-	const handleDrop = (e) => {
+	const handleDrop = async (e) => {
 		e.preventDefault();
 		setIsDragOver(false);
 		const files = e.dataTransfer.files;
 		if (files.length > 0) {
 			setIsProcessing(true);
-			handleFileUpload(files[0]);
+			try {
+				await handleFileUpload(files[0]);
+				// Processing state will be cleared by App.jsx after navigation
+			} catch (error) {
+				console.error("Error processing file:", error);
+				setIsProcessing(false);
+			}
 		}
 	};
 
-	const handleFileSelect = (e) => {
+	const handleFileSelect = async (e) => {
 		const files = e.target.files;
 		if (files.length > 0) {
 			setIsProcessing(true);
-			handleFileUpload(files[0]);
+			try {
+				await handleFileUpload(files[0]);
+				// Processing state will be cleared by App.jsx after navigation
+			} catch (error) {
+				console.error("Error processing file:", error);
+				setIsProcessing(false);
+			}
 		}
+		// Clear the input so same file can be uploaded again
+		e.target.value = "";
 	};
 
 	return (
@@ -130,7 +158,26 @@ const OCRPage = ({ handleFileUpload, setOcrResult }) => {
 							<h3 className="processingTitle">Processing...</h3>
 							<p className="processingText">
 								Extracting text and analyzing content
-							</p>
+							</p>{" "}
+							<div className="estimatedTime">
+								<p
+									style={{
+										marginTop: "1rem",
+										color: "#9ca3af",
+										fontSize: "0.9rem",
+									}}>
+									⏱️ Estimated time: 30-60 seconds
+								</p>
+								<p
+									style={{
+										color: "#9ca3af",
+										fontSize: "0.85rem",
+										marginTop: "0.5rem",
+									}}>
+									Processing includes OCR extraction and
+									AI-powered summarization
+								</p>
+							</div>{" "}
 						</div>
 					) : (
 						<div
@@ -208,7 +255,7 @@ const OCRPage = ({ handleFileUpload, setOcrResult }) => {
 											<Calendar size={14} />
 											<span>
 												{new Date(
-													item.created
+													item.created,
 												).toLocaleDateString()}
 											</span>
 										</div>

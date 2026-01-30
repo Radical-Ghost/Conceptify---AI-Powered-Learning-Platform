@@ -12,10 +12,12 @@ import {
 	CheckCircle,
 	XCircle,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import "../styles/ChatbotPage.css";
 
 const ChatbotPage = ({
 	chatMessages,
+	setChatMessages,
 	inputMessage,
 	setInputMessage,
 	handleSendMessage,
@@ -41,20 +43,47 @@ const ChatbotPage = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
+	// Sync messages from App.jsx to current session
+	useEffect(() => {
+		if (currentSessionId && chatMessages.length > 0) {
+			const updatedSessions = chatSessions.map((session) => {
+				if (session.id === currentSessionId) {
+					// Always update messages to catch text changes (like "Thinking..." -> actual response)
+					return {
+						...session,
+						messages: chatMessages,
+						updatedAt: Date.now(),
+						metadata: {
+							...session.metadata,
+							messageCount: chatMessages.length,
+						},
+					};
+				}
+				return session;
+			});
+
+			// Save updated sessions
+			saveChatSessions(updatedSessions);
+		}
+	}, [chatMessages, currentSessionId]);
+
 	// Sync messages and documents when current session changes
 	useEffect(() => {
 		if (currentSessionId) {
 			const session = chatSessions.find((s) => s.id === currentSessionId);
 			if (session) {
 				setLocalMessages(session.messages);
+				// Load messages into App.jsx state
+				setChatMessages(session.messages || []);
 				// Load documents for this session
 				setChatDocuments(session.documents || []);
 			}
 		} else {
 			setLocalMessages([]);
+			setChatMessages([]);
 			setChatDocuments([]);
 		}
-	}, [currentSessionId, chatSessions, setChatDocuments]);
+	}, [currentSessionId, chatSessions, setChatDocuments, setChatMessages]);
 
 	const loadChatSessions = () => {
 		const saved = localStorage.getItem("chatSessions");
@@ -71,14 +100,14 @@ const ChatbotPage = ({
 	const loadTestHistory = () => {
 		const history = JSON.parse(localStorage.getItem("testHistory")) || [];
 		setTestHistory(
-			history.slice(0, 5).sort((a, b) => b.timestamp - a.timestamp)
+			history.slice(0, 5).sort((a, b) => b.timestamp - a.timestamp),
 		);
 	};
 
 	const loadOcrHistory = async () => {
 		try {
 			const response = await fetch(
-				"http://localhost:5001/api/ocr/results"
+				"http://localhost:5001/api/ocr/results",
 			);
 			const data = await response.json();
 			setOcrHistory(data.results || []);
@@ -109,7 +138,7 @@ const ChatbotPage = ({
 							topics: ocrResult.keyTopics || [],
 							documentName:
 								ocrResult.originalFileName || "Document",
-					  }
+						}
 					: { hasContext: false },
 			},
 		};
@@ -117,6 +146,9 @@ const ChatbotPage = ({
 		const updatedSessions = [newSession, ...chatSessions];
 		saveChatSessions(updatedSessions);
 		setCurrentSessionId(newSession.id);
+		// Clear messages in App.jsx state
+		setChatMessages([]);
+		setChatDocuments([]);
 	};
 
 	const deleteChat = (sessionId, e) => {
@@ -127,7 +159,7 @@ const ChatbotPage = ({
 		// If deleting current session, switch to first available or null
 		if (currentSessionId === sessionId) {
 			setCurrentSessionId(
-				updatedSessions.length > 0 ? updatedSessions[0].id : null
+				updatedSessions.length > 0 ? updatedSessions[0].id : null,
 			);
 		}
 	};
@@ -139,54 +171,14 @@ const ChatbotPage = ({
 	const deleteAllChats = () => {
 		if (
 			window.confirm(
-				"Are you sure you want to delete all chats? This cannot be undone."
+				"Are you sure you want to delete all chats? This cannot be undone.",
 			)
 		) {
 			saveChatSessions([]);
 			setCurrentSessionId(null);
+			setChatMessages([]);
 			setChatDocuments([]);
 		}
-	};
-
-	const handleLocalSendMessage = () => {
-		if (!inputMessage.trim() || !currentSessionId) return;
-
-		const userMessage = {
-			id: Date.now(),
-			sender: "user",
-			text: inputMessage,
-			timestamp: Date.now(),
-		};
-
-		const aiMessage = {
-			id: Date.now() + 1,
-			sender: "ai",
-			text: "I'm a placeholder AI response. In the future, I'll be powered by a real AI model to help you learn!",
-			timestamp: Date.now() + 100,
-		};
-
-		const updatedSessions = chatSessions.map((session) => {
-			if (session.id === currentSessionId) {
-				const newMessages = [
-					...session.messages,
-					userMessage,
-					aiMessage,
-				];
-				return {
-					...session,
-					messages: newMessages,
-					updatedAt: Date.now(),
-					metadata: {
-						...session.metadata,
-						messageCount: newMessages.length,
-					},
-				};
-			}
-			return session;
-		});
-
-		saveChatSessions(updatedSessions);
-		setInputMessage("");
 	};
 
 	const handleTestClick = (test) => {
@@ -195,7 +187,7 @@ const ChatbotPage = ({
 		console.log("Has detailedAnswers:", !!test.detailedAnswers);
 		console.log(
 			"Number of detailed answers:",
-			test.detailedAnswers?.length
+			test.detailedAnswers?.length,
 		);
 		console.log("showTestModal will be set to:", true);
 		console.log("=========================");
@@ -219,7 +211,7 @@ const ChatbotPage = ({
 	const handleDocumentSelect = async (document) => {
 		// Check if document is already added
 		const alreadyAdded = chatDocuments.some(
-			(doc) => doc.id === document.filename
+			(doc) => doc.id === document.filename,
 		);
 		if (alreadyAdded) {
 			alert(`"${document.originalName}" is already in your chat context`);
@@ -229,7 +221,7 @@ const ChatbotPage = ({
 		try {
 			// Fetch the full document data
 			const response = await fetch(
-				`http://localhost:5001/api/ocr/result/${document.filename}`
+				`http://localhost:5001/api/ocr/result/${document.filename}`,
 			);
 			const fullResult = await response.json();
 
@@ -286,14 +278,18 @@ const ChatbotPage = ({
 	};
 
 	const currentSession = getCurrentSession();
-	const displayMessages = currentSession ? currentSession.messages : [];
+	// Use chatMessages from App.jsx for live updates
+	const displayMessages =
+		currentSession && chatMessages.length > 0
+			? chatMessages
+			: currentSession?.messages || [];
 
 	// Debug: Log modal state
 	console.log(
 		"Modal State - showTestModal:",
 		showTestModal,
 		"selectedTest:",
-		selectedTest
+		selectedTest,
 	);
 
 	return (
@@ -316,10 +312,10 @@ const ChatbotPage = ({
 								</button>
 								{chatSessions.length > 0 && (
 									<button
-									onClick={deleteAllChats}
-									className="deleteAllChatsBtn"
-									title="Delete All Chats">
-									<Trash2 size={18} />
+										onClick={deleteAllChats}
+										className="deleteAllChatsBtn"
+										title="Delete All Chats">
+										<Trash2 size={18} />
 									</button>
 								)}
 							</div>
@@ -354,7 +350,7 @@ const ChatbotPage = ({
 												{session.metadata.messageCount}{" "}
 												messages •{" "}
 												{new Date(
-													session.updatedAt
+													session.updatedAt,
 												).toLocaleDateString()}
 											</div>
 											{session.metadata.context
@@ -411,8 +407,8 @@ const ChatbotPage = ({
 													test.score >= 70
 														? "#10b981"
 														: test.score >= 50
-														? "#f59e0b"
-														: "#ef4444"
+															? "#f59e0b"
+															: "#ef4444"
 												}
 											/>
 										</div>
@@ -423,7 +419,7 @@ const ChatbotPage = ({
 											<div className="testDate">
 												<Calendar size={12} />
 												{new Date(
-													test.timestamp
+													test.timestamp,
 												).toLocaleDateString()}
 											</div>
 										</div>
@@ -432,8 +428,8 @@ const ChatbotPage = ({
 												test.score >= 70
 													? "scoreHigh"
 													: test.score >= 50
-													? "scoreMedium"
-													: "scoreLow"
+														? "scoreMedium"
+														: "scoreLow"
 											}`}>
 											{test.score}%
 										</div>
@@ -498,10 +494,10 @@ const ChatbotPage = ({
 											onClick={() => {
 												const updatedDocuments =
 													chatDocuments.filter(
-														(d) => d.id !== doc.id
+														(d) => d.id !== doc.id,
 													);
 												setChatDocuments(
-													updatedDocuments
+													updatedDocuments,
 												);
 
 												// Save to current session
@@ -519,10 +515,10 @@ const ChatbotPage = ({
 																};
 															}
 															return session;
-														}
+														},
 													);
 												saveChatSessions(
-													updatedSessions
+													updatedSessions,
 												);
 											}}
 											className="removeDocBtn"
@@ -589,11 +585,18 @@ const ChatbotPage = ({
 														? "messageUserBubble"
 														: "messageAiBubble"
 												}`}>
-												{message.text}
+												{message.sender === "ai" &&
+												!message.isLoading ? (
+													<ReactMarkdown>
+														{message.text}
+													</ReactMarkdown>
+												) : (
+													message.text
+												)}
 											</div>
 											<div className="messageTime">
 												{new Date(
-													message.timestamp
+													message.timestamp,
 												).toLocaleTimeString([], {
 													hour: "2-digit",
 													minute: "2-digit",
@@ -621,8 +624,7 @@ const ChatbotPage = ({
 										setInputMessage(e.target.value)
 									}
 									onKeyPress={(e) =>
-										e.key === "Enter" &&
-										handleLocalSendMessage()
+										e.key === "Enter" && handleSendMessage()
 									}
 									placeholder={
 										currentSession
@@ -633,7 +635,7 @@ const ChatbotPage = ({
 									disabled={!currentSession}
 								/>
 								<button
-									onClick={handleLocalSendMessage}
+									onClick={handleSendMessage}
 									className="chatSendButton"
 									disabled={!currentSession}>
 									<Send size={20} />
@@ -672,8 +674,8 @@ const ChatbotPage = ({
 											selectedTest.score >= 70
 												? "scoreHigh"
 												: selectedTest.score >= 50
-												? "scoreMedium"
-												: "scoreLow"
+													? "scoreMedium"
+													: "scoreLow"
 										}`}>
 										{selectedTest.score}%
 									</div>
@@ -691,7 +693,7 @@ const ChatbotPage = ({
 									<div className="summaryLabel">Date</div>
 									<div className="summaryValue summaryDate">
 										{new Date(
-											selectedTest.timestamp
+											selectedTest.timestamp,
 										).toLocaleDateString()}
 									</div>
 								</div>
@@ -772,11 +774,11 @@ const ChatbotPage = ({
 																		)}
 																</div>
 															);
-														}
+														},
 													)}
 												</div>
 											</div>
-										)
+										),
 									)}
 								</div>
 							)}
@@ -827,7 +829,7 @@ const ChatbotPage = ({
 									{ocrHistory.map((document, index) => {
 										const isAdded = chatDocuments.some(
 											(doc) =>
-												doc.id === document.filename
+												doc.id === document.filename,
 										);
 
 										return (
@@ -841,7 +843,7 @@ const ChatbotPage = ({
 												onClick={() =>
 													!isAdded &&
 													handleDocumentSelect(
-														document
+														document,
 													)
 												}>
 												<div className="documentIcon">
@@ -854,14 +856,14 @@ const ChatbotPage = ({
 													</h3>
 													<p className="documentDate">
 														{new Date(
-															document.created
+															document.created,
 														).toLocaleDateString(
 															"en-US",
 															{
 																month: "short",
 																day: "numeric",
 																year: "numeric",
-															}
+															},
 														)}
 													</p>
 													<p className="documentPreview">
