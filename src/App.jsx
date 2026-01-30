@@ -44,13 +44,34 @@ const AppContent = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [user, setUser] = useState(null);
-	const [ocrResult, setOcrResult] = useState(null);
+	const [ocrResult, setOcrResult] = useState(() => {
+		// Load OCR result from localStorage on mount
+		try {
+			const saved = localStorage.getItem("conceptify_ocr_result");
+			return saved ? JSON.parse(saved) : null;
+		} catch (error) {
+			console.error("Error loading saved OCR result:", error);
+			return null;
+		}
+	});
 	const [activeTest, setActiveTest] = useState(null);
 	const [chatMessages, setChatMessages] = useState([]);
 	const [inputMessage, setInputMessage] = useState("");
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 	const [chatDocuments, setChatDocuments] = useState([]);
 	const [isSessionValidating, setIsSessionValidating] = useState(true);
+
+	// Save OCR result to localStorage whenever it changes
+	useEffect(() => {
+		if (ocrResult) {
+			localStorage.setItem(
+				"conceptify_ocr_result",
+				JSON.stringify(ocrResult),
+			);
+		} else {
+			localStorage.removeItem("conceptify_ocr_result");
+		}
+	}, [ocrResult]);
 
 	// Theme management - Load and apply theme on mount
 	useEffect(() => {
@@ -213,49 +234,162 @@ const AppContent = () => {
 	};
 
 	// Chat handlers
-	const handleSendMessage = () => {
+	const handleSendMessage = async () => {
 		if (!inputMessage.trim()) return;
 
 		const newMessage = {
 			id: Date.now(),
 			text: inputMessage,
 			sender: "user",
+			timestamp: Date.now(),
 		};
 		setChatMessages((prev) => [...prev, newMessage]);
+		setInputMessage("");
 
-		setTimeout(() => {
-			let responseText;
+		// Add a loading message
+		const loadingMessage = {
+			id: Date.now() + 1,
+			text: "Thinking...",
+			sender: "ai",
+			isLoading: true,
+			timestamp: Date.now(),
+		};
+		setChatMessages((prev) => [...prev, loadingMessage]);
 
-			// Use OCR context if available
-			if (
-				ocrResult &&
-				(ocrResult.finalExtractedText || ocrResult.extractedText)
-			) {
-				const mainText =
-					ocrResult.finalExtractedText || ocrResult.extractedText;
-				const shortContext = mainText.substring(0, 200);
-				responseText = `Based on your uploaded document: "${shortContext}..."
+		try {
+			// Build conversation context
+			let conversationContext = "";
 
-I can help you understand "${inputMessage}" in the context of this material. The document covers topics like: ${
-					ocrResult.keyTopics?.slice(0, 3).join(", ") ||
-					"various important areas"
-				}.
-
-What specific aspect would you like me to explain?`;
-			} else {
-				// Default response when no OCR context
-				responseText = `I understand you're asking about "${inputMessage}". Let me help you learn this concept step by step. This is a powerful learning topic that we can explore together!`;
+			// Add document context if available
+			if (chatDocuments && chatDocuments.length > 0) {
+				conversationContext += "DOCUMENT CONTEXT:\n";
+				chatDocuments.forEach((doc) => {
+					conversationContext += `\nDocument: ${doc.name}\n`;
+					conversationContext += `Summary: ${doc.summary}\n`;
+					conversationContext += `Key Topics: ${doc.keyTopics?.join(", ")}\n`;
+					conversationContext += `Content:\n${doc.content}\n`;
+					conversationContext += "\n---\n\n";
+				});
+			} else if (ocrResult && ocrResult.aiEnhancedText) {
+				// Fallback to ocrResult if no documents are in chatDocuments
+				conversationContext += "DOCUMENT CONTEXT:\n";
+				conversationContext += `Document: ${ocrResult.originalFileName || "Uploaded Document"}\n`;
+				conversationContext += `Summary: ${ocrResult.summary || ""}\n`;
+				conversationContext += `Key Topics: ${ocrResult.keyTopics?.join(", ") || ""}\n`;
+				conversationContext += `Content:\n${ocrResult.aiEnhancedText}\n`;
+				conversationContext += "\n---\n\n";
 			}
 
-			const aiResponse = {
-				id: Date.now() + 1,
-				text: responseText,
-				sender: "ai",
-			};
-			setChatMessages((prev) => [...prev, aiResponse]);
-		}, 1000);
+			// Add conversation history
+			conversationContext += "CONVERSATION HISTORY:\n";
+			chatMessages.forEach((msg) => {
+				if (!msg.isLoading) {
+					conversationContext += `${msg.sender === "user" ? "User" : "AI"}: ${msg.text}\n`;
+				}
+			});
 
-		setInputMessage("");
+			// Add current question
+			conversationContext += `User: ${inputMessage}\n`;
+			conversationContext += "\nAI:";
+
+			// Call Mistral API
+			const response = await fetch(
+				"http://localhost:11434/api/generate",
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						model: "mistral:7b",
+						prompt: `You are an AI tutor designed to help students clearly understand technical and academic concepts.
+
+Your goal is to resolve the user's doubt accurately, clearly, and in a well-structured format.
+
+Formatting rules (MANDATORY - USE MARKDOWN):
+- Do NOT write large paragraphs.
+- Use markdown headings (### for section titles).
+- Use bullet points (- for each point).
+- Use **bold** for emphasis on key terms.
+- Use \`code\` for technical terms, functions, or code snippets.
+- Keep line length short and readable.
+- Prefer structure over prose.
+
+Response structure (FOLLOW THIS ORDER):
+
+### Answer:
+- Direct answer to the question in 1–2 lines.
+
+### Explanation:
+- 2–5 concise bullet points explaining the concept.
+- Use **bold** for key terms.
+
+### Example: (Optional)
+- Include only if it improves clarity.
+- Use code blocks (\`\`\`) for code examples.
+
+### Comparison: (Optional)
+- Use bullet points with clear labels ONLY if the question asks for differences.
+
+Behavior rules:
+- Use simple and precise language unless deeper detail is requested.
+- Stay focused on the specific question.
+- Do NOT summarize entire topics.
+- Do NOT add unrelated concepts or speculation.
+- Assume the most common academic interpretation if the question is vague.
+- Ask at most one short clarifying question only if absolutely necessary.
+
+End the response cleanly. Do not add extra sections.
+
+Now answer the following question:
+
+${conversationContext}`,
+						stream: false,
+						options: {
+							temperature: 0.3,
+							top_p: 0.9,
+							num_predict: 500,
+						},
+					}),
+				},
+			);
+
+			if (!response.ok) {
+				throw new Error(`Mistral API error: ${response.status}`);
+			}
+
+			const data = await response.json();
+			const aiResponseText = data.response.trim();
+
+			// Replace loading message with actual response
+			setChatMessages((prev) =>
+				prev.map((msg) =>
+					msg.id === loadingMessage.id
+						? {
+								...msg,
+								text: aiResponseText,
+								isLoading: false,
+							}
+						: msg,
+				),
+			);
+		} catch (error) {
+			console.error("Error calling Mistral:", error);
+
+			// Replace loading message with error message
+			setChatMessages((prev) =>
+				prev.map((msg) =>
+					msg.id === loadingMessage.id
+						? {
+								...msg,
+								text: "Sorry, I encountered an error. Please make sure Ollama is running with Mistral model installed.",
+								isLoading: false,
+								isError: true,
+							}
+						: msg,
+				),
+			);
+		}
 	};
 
 	// OCR handlers
@@ -270,7 +404,7 @@ What specific aspect would you like me to explain?`;
 				{
 					method: "POST",
 					body: formData,
-				}
+				},
 			);
 
 			const result = await response.json();
@@ -289,6 +423,9 @@ What specific aspect would you like me to explain?`;
 					enhancedTextNltk:
 						result.enhancedTextNltk ||
 						result.data?.extraction_results?.corrected_text,
+					aiEnhancedText:
+						result.aiEnhancedText ||
+						result.data?.extraction_results?.ai_enhanced_text,
 					// Legacy field names (fallback)
 					extractedText:
 						result.finalExtractedText ||
@@ -337,9 +474,13 @@ What specific aspect would you like me to explain?`;
 					fileInfo: result.fileInfo || result.data?.file_info,
 					savedFileName: result.savedFileName,
 				});
+				// Clear processing state after successful upload
+				localStorage.removeItem("ocr_processing");
 				navigate("/ocr-result");
 			} else {
 				console.error("OCR processing failed:", result.error);
+				// Clear processing state on error
+				localStorage.removeItem("ocr_processing");
 				// Set an error state that can be displayed in the UI instead of alert
 				setOcrResult({
 					error: "OCR processing failed: " + result.error,
@@ -348,6 +489,9 @@ What specific aspect would you like me to explain?`;
 			}
 		} catch (error) {
 			console.error("Error uploading file:", error);
+
+			// Clear processing state on error
+			localStorage.removeItem("ocr_processing");
 
 			// Check if server is available - if not, clear session
 			const isServerAvailable = await validateSession();
@@ -458,6 +602,7 @@ What specific aspect would you like me to explain?`;
 							<div className={mainContentClass}>
 								<ChatbotPage
 									chatMessages={chatMessages}
+									setChatMessages={setChatMessages}
 									inputMessage={inputMessage}
 									setInputMessage={setInputMessage}
 									handleSendMessage={handleSendMessage}

@@ -17,10 +17,15 @@ import "../styles/OcrResultPage.css";
 const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 	const navigate = useNavigate();
 	const [isEditing, setIsEditing] = useState(false);
-	const [editedText, setEditedText] = useState(
-		ocrResult?.finalExtractedText || ocrResult?.extractedText || "",
+	const [selectedTab, setSelectedTab] = useState(
+		ocrResult?.aiEnhancedText ? "ai-enhanced" : "final",
 	);
-	const [selectedTab, setSelectedTab] = useState("final"); // 'original', 'enhanced', 'final'
+	const [editedText, setEditedText] = useState(
+		ocrResult?.aiEnhancedText ||
+			ocrResult?.finalExtractedText ||
+			ocrResult?.extractedText ||
+			"",
+	);
 	const [saveMessage, setSaveMessage] = useState("");
 	const [addToChatMessage, setAddToChatMessage] = useState("");
 	const summaryDetails =
@@ -90,6 +95,7 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 				if (setOcrResult) {
 					setOcrResult((prevResult) => ({
 						...prevResult,
+						aiEnhancedText: editedText,
 						finalExtractedText: editedText,
 						extractedText: editedText, // Keep legacy field for compatibility
 					}));
@@ -110,7 +116,10 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 
 	const handleCancelEdit = () => {
 		setEditedText(
-			ocrResult?.finalExtractedText || ocrResult?.extractedText || "",
+			ocrResult?.aiEnhancedText ||
+				ocrResult?.finalExtractedText ||
+				ocrResult?.extractedText ||
+				"",
 		);
 		setIsEditing(false);
 	};
@@ -217,11 +226,6 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 									))}
 								</div>
 							)}
-							{ocrResult?.summaryModel && (
-								<span className="summaryModelTag">
-									Model: {ocrResult.summaryModel}
-								</span>
-							)}
 						</div>
 					)}
 				</div>
@@ -244,23 +248,24 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 
 					{/* Text View Tabs */}
 					<div className="textTabs">
+						{ocrResult?.aiEnhancedText && (
+							<button
+								className={`textTab ${
+									selectedTab === "ai-enhanced"
+										? "active"
+										: ""
+								}`}
+								onClick={() => setSelectedTab("ai-enhanced")}>
+								✨ AI Enhanced
+							</button>
+						)}
 						<button
 							className={`textTab ${
 								selectedTab === "final" ? "active" : ""
 							}`}
 							onClick={() => setSelectedTab("final")}>
-							📄 Final Extracted Text
+							📄 Final Extracted
 						</button>
-						{(ocrResult?.enhancedTextNltk ||
-							ocrResult?.correctedText) && (
-							<button
-								className={`textTab ${
-									selectedTab === "enhanced" ? "active" : ""
-								}`}
-								onClick={() => setSelectedTab("enhanced")}>
-								🔧 Enhanced Text (NLTK)
-							</button>
-						)}
 						{(ocrResult?.originalOcrOutput ||
 							ocrResult?.rawText) && (
 							<button
@@ -268,7 +273,7 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 									selectedTab === "original" ? "active" : ""
 								}`}
 								onClick={() => setSelectedTab("original")}>
-								📸 Original OCR Output
+								📸 OCR Output
 							</button>
 						)}
 					</div>
@@ -301,16 +306,13 @@ const OCRResultPage = ({ ocrResult, setOcrResult, addDocumentToChat }) => {
 							</div>
 						) : (
 							<div className="textDisplay">
+								{selectedTab === "ai-enhanced" && (
+									<p>{ocrResult?.aiEnhancedText}</p>
+								)}
 								{selectedTab === "final" && (
 									<p>
 										{ocrResult?.finalExtractedText ||
 											ocrResult?.extractedText}
-									</p>
-								)}
-								{selectedTab === "enhanced" && (
-									<p>
-										{ocrResult?.enhancedTextNltk ||
-											ocrResult?.correctedText}
 									</p>
 								)}
 								{selectedTab === "original" && (

@@ -520,6 +520,90 @@
 	border-bottom-left-radius: 4px;
 }
 
+/* Markdown formatting in AI messages */
+.messageAiBubble h3 {
+	font-size: 0.95rem;
+	font-weight: 600;
+	margin: 0.75rem 0 0.5rem 0;
+	color: var(--text-primary);
+}
+
+.messageAiBubble h3:first-child {
+	margin-top: 0;
+}
+
+.messageAiBubble ul,
+.messageAiBubble ol {
+	margin: 0.5rem 0;
+	padding-left: 1.5rem;
+}
+
+.messageAiBubble li {
+	margin: 0.35rem 0;
+	line-height: 1.6;
+}
+
+.messageAiBubble p {
+	margin: 0.5rem 0;
+	line-height: 1.6;
+}
+
+.messageAiBubble code {
+	background-color: rgba(0, 0, 0, 0.1);
+	padding: 0.15rem 0.4rem;
+	border-radius: 3px;
+	font-size: 0.9em;
+	font-family: "Courier New", monospace;
+}
+
+[data-theme="dark"] .messageAiBubble code {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.messageAiBubble pre {
+	background-color: rgba(0, 0, 0, 0.05);
+	padding: 0.75rem;
+	border-radius: 6px;
+	overflow-x: auto;
+	margin: 0.75rem 0;
+}
+
+[data-theme="dark"] .messageAiBubble pre {
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
+.messageAiBubble pre code {
+	background-color: transparent;
+	padding: 0;
+}
+
+.messageAiBubble strong {
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.messageAiBubble table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 0.75rem 0;
+}
+
+.messageAiBubble th,
+.messageAiBubble td {
+	border: 1px solid var(--border-color);
+	padding: 0.5rem;
+	text-align: left;
+}
+
+.messageAiBubble th {
+	background-color: rgba(0, 0, 0, 0.05);
+	font-weight: 600;
+}
+
+[data-theme="dark"] .messageAiBubble th {
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
 .messageTime {
 	font-size: 0.75rem;
 	color: var(--text-tertiary);

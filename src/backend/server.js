@@ -17,7 +17,7 @@ const PYTHON_PATH = path.join(
 	"..",
 	".venv",
 	"Scripts",
-	"python.exe"
+	"python.exe",
 );
 
 const app = express();
@@ -52,7 +52,7 @@ const upload = multer({
 	fileFilter: (req, file, cb) => {
 		const allowedTypes = /jpeg|jpg|png|gif|pdf/;
 		const extname = allowedTypes.test(
-			path.extname(file.originalname).toLowerCase()
+			path.extname(file.originalname).toLowerCase(),
 		);
 		const mimetype = allowedTypes.test(file.mimetype);
 
@@ -61,8 +61,8 @@ const upload = multer({
 		} else {
 			cb(
 				new Error(
-					"Only image files (JPEG, JPG, PNG, GIF) and PDF files are allowed!"
-				)
+					"Only image files (JPEG, JPG, PNG, GIF) and PDF files are allowed!",
+				),
 			);
 		}
 	},
@@ -118,13 +118,13 @@ app.get("/api/ocr/results", (req, res) => {
 						extractedText:
 							content.data?.extraction_results?.extracted_text?.substring(
 								0,
-								100
+								100,
 							) + "..." || "No text available",
 					};
 				} catch (err) {
 					console.error(
 						`❌ Error reading OCR result file (${file}):`,
-						err.message
+						err.message,
 					);
 					// Return null for corrupted files instead of error object
 					return null;
@@ -162,7 +162,7 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 		{
 			cwd: __dirname,
 			stdio: ["pipe", "pipe", "pipe"],
-		}
+		},
 	);
 
 	let pythonOutput = "";
@@ -195,7 +195,7 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 		try {
 			console.log(
 				"📤 Python output:",
-				pythonOutput.substring(0, 200) + "..."
+				pythonOutput.substring(0, 200) + "...",
 			);
 			const pythonResult = JSON.parse(pythonOutput);
 			const summaryText =
@@ -236,6 +236,10 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 							pythonResult.enhancedTextNltk ||
 							pythonResult.correctedText ||
 							pythonResult.corrected_text ||
+							"",
+						ai_enhanced_text:
+							pythonResult.aiEnhancedText ||
+							pythonResult.ai_enhanced_text ||
 							"",
 					},
 					ai_analysis: {
@@ -291,7 +295,7 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 			console.log(
 				`💾 OCR result automatically saved to: ${resultFileName} (${(
 					resultContent.length / 1024
-				).toFixed(2)} KB)`
+				).toFixed(2)} KB)`,
 			);
 
 			res.json(transformedResult);
@@ -311,7 +315,7 @@ app.post("/api/ocr/process", upload.single("file"), (req, res) => {
 		} catch (cleanupError) {
 			console.warn(
 				"⚠️ Failed to clean up temporary file:",
-				cleanupError.message
+				cleanupError.message,
 			);
 		}
 	});
